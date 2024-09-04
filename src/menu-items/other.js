@@ -10,14 +10,22 @@ const other = {
   id: 'billCreation-docs-roadmap',
   type: 'group',
   children: [
+    // {
+    //   id: 'billCreation-page',
+    //   title: 'Bill Creation Page',
+    //   type: 'item',
+    //   url: '/billCreation-page',
+    //   icon: icons.IconBrandChrome,
+    //   breadcrumbs: false
+    // },
     {
-      id: 'billCreation-page',
-      title: 'Bill Creation Page',
+      id: 'bookings',
+      title: 'Bookings',
       type: 'item',
-      url: '/billCreation-page',
+      url: '/bookings',
       icon: icons.IconBrandChrome,
       breadcrumbs: false
-    },
+    }
     // {
     //   id: 'documentation',
     //   title: 'Documentation',

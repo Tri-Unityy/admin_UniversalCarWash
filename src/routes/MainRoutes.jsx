@@ -17,6 +17,8 @@ const DashboardDefault = Loadable(lazy(() => import('views/dashboard')));
 // billCreation page routing
 const BillCreation = Loadable(lazy(() => import('views/billCreation-page')));
 const Bookings = Loadable(lazy(() => import('views/bookings')));
+const BookingDetails = Loadable(lazy(() => import('views/bookingDetails')));
+const GenerateBill = Loadable(lazy(() => import('views/generateBill')));
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
@@ -88,6 +90,14 @@ const MainRoutes = {
     {
       path: 'bookings',
       element: <Bookings />
+    },
+    {
+      path: 'bookingDetails/:id',
+      element: <BookingDetails />
+    },
+    {
+      path: 'generateBill/:id',
+      element: <GenerateBill />
     }
   ]
 };

@@ -8,16 +8,21 @@ import {
   TableRow,
   Paper,
   TablePagination,
+  Button
 } from '@mui/material';
 import MainCard from 'ui-component/cards/MainCard';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
 
 const Bookings = () => {
+  const navigate = useNavigate();
+
   // Dummy columns data
   const columns = [
     { id: 'id', label: 'ID' },
     { id: 'name', label: 'Name' },
     { id: 'date', label: 'Booking Date' },
     { id: 'status', label: 'Status' },
+    { id: 'manage', label: 'Manage' }, // New column for "Manage" button
   ];
 
   // Dummy rows data
@@ -42,6 +47,11 @@ const Bookings = () => {
     setPage(0);
   };
 
+  // Function to handle Manage button click
+  const handleManageClick = (id) => {
+    navigate(`/bookingDetails/${id}`);
+  };
+
   return (
     <MainCard title="Bookings">
       <Paper>
@@ -57,9 +67,18 @@ const Bookings = () => {
             <TableBody>
               {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
                 <TableRow key={row.id}>
-                  {columns.map((column) => (
+                  {columns.slice(0, -1).map((column) => ( // Skip the last column for "Manage"
                     <TableCell key={column.id}>{row[column.id]}</TableCell>
                   ))}
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => handleManageClick(row.id)}
+                    >
+                      Manage
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

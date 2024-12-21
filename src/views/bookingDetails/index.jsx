@@ -25,7 +25,7 @@ const BookingDetails = () => {
   }
 
   const handleGenerateBill = () => {
-    navigate(`/generateBill/${booking.id}`);
+    navigate(`/generateBill/${booking.id}`, { state: booking });
   };
 
   return (
@@ -60,21 +60,20 @@ const BookingDetails = () => {
         </Box>
 
         <Box mt={3}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleGenerateBill}
-            sx={{ marginRight: 2 }}
-          >
-            Generate Bill
-          </Button>
-
-          <Button
+        <Button
             variant="outlined"
             color="secondary"
             onClick={() => navigate('/bookings')}
+            sx={{ marginRight: 2 }}
           >
             Back to Bookings
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleGenerateBill}       
+          >
+            Generate Bill
           </Button>
         </Box>
       </Paper>

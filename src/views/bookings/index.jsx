@@ -11,7 +11,7 @@ import {
   Button
 } from '@mui/material';
 import MainCard from 'ui-component/cards/MainCard';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
+import { useNavigate } from 'react-router-dom'; 
 
 const Bookings = () => {
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ const Bookings = () => {
     { id: 'name', label: 'Name' },
     { id: 'date', label: 'Booking Date' },
     { id: 'status', label: 'Status' },
-    { id: 'manage', label: 'Manage' }, // New column for "Manage" button
+    { id: 'manage', label: 'Manage' }, 
   ];
 
   // Dummy rows data

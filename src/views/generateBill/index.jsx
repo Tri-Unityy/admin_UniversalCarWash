@@ -1,50 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, TextField, Typography, Paper, Box } from '@mui/material';
 import MainCard from 'ui-component/cards/MainCard';
 
-// Dummy booking data
-const bookings = [
-  { id: 1, name: 'John Doe', phoneNumber: '123-456-7890', date: '2024-09-01', timeSlot: '10:00 AM - 11:00 AM', status: 'Confirmed', amount: 150, services: ['Wash', 'Polish'], vehicleType: 'SUV', vehicleNumber: 'ABC123' },
-  { id: 2, name: 'Jane Smith', phoneNumber: '987-654-3210', date: '2024-09-02', timeSlot: '12:00 PM - 1:00 PM', status: 'Pending', amount: 200, services: ['Oil Change', 'Tire Rotation'], vehicleType: 'Sedan', vehicleNumber: 'XYZ789' },
-  { id: 3, name: 'Alice Johnson', phoneNumber: '555-555-5555', date: '2024-09-03', timeSlot: '2:00 PM - 3:00 PM', status: 'Cancelled', amount: 0, services: [], vehicleType: 'Hatchback', vehicleNumber: 'LMN456' },
-  { id: 4, name: 'Bob Brown', phoneNumber: '444-444-4444', date: '2024-09-04', timeSlot: '4:00 PM - 5:00 PM', status: 'Confirmed', amount: 300, services: ['Full Service', 'Wash'], vehicleType: 'SUV', vehicleNumber: 'QWE987' },
-  { id: 5, name: 'Charlie Davis', phoneNumber: '333-333-3333', date: '2024-09-05', timeSlot: '9:00 AM - 10:00 AM', status: 'Pending', amount: 120, services: ['Polish'], vehicleType: 'Truck', vehicleNumber: 'GHI321' },
-  { id: 6, name: 'Emily Evans', phoneNumber: '222-222-2222', date: '2024-09-06', timeSlot: '3:00 PM - 4:00 PM', status: 'Cancelled', amount: 0, services: [], vehicleType: 'Sedan', vehicleNumber: 'JKL654' }
-];
-
 const GenerateBill = () => {
-  const { id } = useParams(); // Get booking ID from the URL
+  const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const booking = location.state;
+  const currentDate = new Date().toISOString().split('T')[0];
 
-  // Find booking data by ID
-  const booking = bookings.find((b) => b.id === parseInt(id));
+  const calculateSubTotal = (services) =>
+    services.reduce((sum, service) => sum + (service.price || 0), 0);
 
-  // State to manage editable form fields
   const [formData, setFormData] = useState({
     name: booking?.name || '',
     phoneNumber: booking?.phoneNumber || '',
-    date: booking?.date || '',
+    bookingdate: booking?.date || '',
     timeSlot: booking?.timeSlot || '',
     vehicleType: booking?.vehicleType || '',
     vehicleNumber: booking?.vehicleNumber || '',
-    amount: booking?.amount || 0,
-    discount: 0, // New field for discount
-    services: booking?.services.join(', ') || '' // New field for services
+    discount: 0,
+    services: booking?.services.map((service) => ({ name: service, price: 0 })) || [],
+    paymentDueDate: currentDate,
+    serviceDate: currentDate,
+    customerAddress: booking?.customerAddress || '',
+    subTotal: 0,
+    total: 0,
   });
 
-  if (!booking) {
-    return <Typography variant="h5">Booking not found</Typography>;
-  }
+  // Calculate subtotal and total whenever services or discount change
+  useEffect(() => {
+    const subTotal = calculateSubTotal(formData.services);
+    const total = subTotal - formData.discount;
+    setFormData((prevData) => ({ ...prevData, subTotal, total }));
+  }, [formData.services, formData.discount]);
 
-  // Handle input changes for form fields
-  const handleChange = (e) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
+  const handleAddService = () => {
+    setFormData((prevData) => ({
+      ...prevData,
+      services: [...prevData.services, { name: '', price: 0 }],
+    }));
+  };
+
+  const handleServiceChange = (index, field, value) => {
+    const updatedServices = [...formData.services];
+    updatedServices[index][field] = field === 'price' ? parseFloat(value) || 0 : value;
+    setFormData((prevData) => ({ ...prevData, services: updatedServices }));
+  };
+
+  const handleRemoveService = (index) => {
+    const updatedServices = formData.services.filter((_, i) => i !== index);
+    setFormData((prevData) => ({ ...prevData, services: updatedServices }));
+  };
+
   const handleGenerateBill = () => {
-    navigate('/generatedBill');
+    console.log('Generated Bill Data:', formData);
+    navigate('/generatedBill', { state: formData });
   };
 
   return (
@@ -56,7 +74,7 @@ const GenerateBill = () => {
             label="Customer Name"
             name="name"
             value={formData.name}
-            onChange={handleChange}
+            onChange={handleInputChange}
           />
         </Box>
         <Box mb={2}>
@@ -65,16 +83,25 @@ const GenerateBill = () => {
             label="Phone Number"
             name="phoneNumber"
             value={formData.phoneNumber}
-            onChange={handleChange}
+            onChange={handleInputChange}
+          />
+        </Box>
+        <Box mb={2}>
+          <TextField
+            fullWidth
+            label="Customer Address"
+            name="customerAddress"
+            value={formData.customerAddress}
+            onChange={handleInputChange}
           />
         </Box>
         <Box mb={2}>
           <TextField
             fullWidth
             label="Booking Date"
-            name="date"
-            value={formData.date}
-            onChange={handleChange}
+            name="bookingdate"
+            value={formData.bookingdate}
+            onChange={handleInputChange}
           />
         </Box>
         <Box mb={2}>
@@ -83,7 +110,7 @@ const GenerateBill = () => {
             label="Booking Time Slot"
             name="timeSlot"
             value={formData.timeSlot}
-            onChange={handleChange}
+            onChange={handleInputChange}
           />
         </Box>
         <Box mb={2}>
@@ -92,7 +119,7 @@ const GenerateBill = () => {
             label="Vehicle Type"
             name="vehicleType"
             value={formData.vehicleType}
-            onChange={handleChange}
+            onChange={handleInputChange}
           />
         </Box>
         <Box mb={2}>
@@ -101,17 +128,7 @@ const GenerateBill = () => {
             label="Vehicle Number"
             name="vehicleNumber"
             value={formData.vehicleNumber}
-            onChange={handleChange}
-          />
-        </Box>
-        <Box mb={2}>
-          <TextField
-            fullWidth
-            label="Amount"
-            name="amount"
-            type="number"
-            value={formData.amount}
-            onChange={handleChange}
+            onChange={handleInputChange}
           />
         </Box>
         <Box mb={2}>
@@ -121,18 +138,64 @@ const GenerateBill = () => {
             name="discount"
             type="number"
             value={formData.discount}
-            onChange={handleChange}
+            onChange={handleInputChange}
           />
         </Box>
         <Box mb={2}>
           <TextField
             fullWidth
-            label="Services"
-            name="services"
-            value={formData.services}
-            onChange={handleChange}
-            helperText="Separate services with commas"
+            label="Payment Due Date"
+            name="paymentDueDate"
+            type="date"
+            value={formData.paymentDueDate}
+            onChange={handleInputChange}
           />
+        </Box>
+        <Box mb={2}>
+          <TextField
+            fullWidth
+            label="Service Date"
+            name="serviceDate"
+            type="date"
+            value={formData.serviceDate}
+            onChange={handleInputChange}
+          />
+        </Box>
+
+        <Typography variant="h6" gutterBottom>
+          Services
+        </Typography>
+        {formData.services.map((service, index) => (
+          <Box key={index} display="flex" alignItems="center" gap={2} mb={2}>
+            <TextField
+              label="Service Name"
+              value={service.name}
+              onChange={(e) => handleServiceChange(index, 'name', e.target.value)}
+              fullWidth
+            />
+          <TextField
+            label="Price"
+            type="number"
+            value={service.price || ""}
+            onChange={(e) => handleServiceChange(index, 'price', e.target.value)}
+            sx={{ width: 120 }}
+          />
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={() => handleRemoveService(index)}
+            >
+              Remove
+            </Button>
+          </Box>
+        ))}
+        <Button variant="outlined" onClick={handleAddService} sx={{ mb: 2 }}>
+          Add Service
+        </Button>
+
+        <Box mb={2}>
+          <Typography variant="subtitle1">Subtotal: {formData.subTotal}</Typography>
+          <Typography variant="subtitle1">Total: {formData.total}</Typography>
         </Box>
 
         <Box mt={3}>
@@ -141,10 +204,10 @@ const GenerateBill = () => {
             color="primary"
             onClick={handleGenerateBill}
             sx={{ marginRight: 2 }}
+            disabled={formData.services.some((service) => !service.price)}
           >
             Generate Bill
           </Button>
-
           <Button
             variant="outlined"
             color="secondary"

@@ -1,22 +1,13 @@
 import React from "react";
 import { Box, Typography, Grid, Paper, Divider } from "@mui/material";
 import logo from "../../assets/images/Carwash.png";
-
+import { useLocation } from 'react-router-dom';
 const BillView = () => {
-  const bill = {
-    id: 123,
-    date: "2024-05-04",
-    totalAmount: 150.0,
-    items: [
-      { name: "Window Cleaning", price: 50.0, quantity: 2 },
-      { name: "Rim Cleaning", price: 25.0, quantity: 3 },
-      { name: "Seat Cleaning", price: 20.0, quantity: 1 },
-      { name: "Window Cleaning", price: 50.0, quantity: 2 },
-      { name: "Rim Cleaning", price: 25.0, quantity: 3 },
-      { name: "Seat Cleaning", price: 20.0, quantity: 1 },
-    ],
-  };
 
+
+  const location = useLocation();
+  const formData = location.state;
+  console.log('Received Form Data:', formData);
   return (
     <Box sx={{ fontFamily: "Arial, sans-serif", textAlign: "center", p: 4 }}>
       {/* Header Section */}
@@ -75,17 +66,17 @@ const BillView = () => {
         elevation={3}
         sx={{
           mb: 3,
-          p: 1, // Reduced padding
+          p: 1, 
           '@media print': {
             display: 'flex',
             flexDirection: 'row',
-            flexWrap: 'nowrap', // Prevent wrapping in print
+            flexWrap: 'nowrap', 
           },
         }}
       >
         <Grid
           container
-          spacing={1} // Reduced spacing
+          spacing={1}
           sx={{
             display: 'flex',
             flexDirection: 'row',
@@ -103,7 +94,7 @@ const BillView = () => {
                 '@media print': {
                   textAlign: 'left',
                   margin: 0,
-                  fontSize: '0.875rem', // Reduced font size
+                  fontSize: '0.875rem', 
                 },
               }}
             >
@@ -130,7 +121,7 @@ const BillView = () => {
               </Grid>
               <Grid item xs={6} sx={{ textAlign: 'left', '@media print': { textAlign: 'left' } }}>
                 <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
-                  12.05.2024
+                {formData.serviceDate}
                 </Typography>
                 <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
                   Inv 001
@@ -139,7 +130,7 @@ const BillView = () => {
                   ser 1
                 </Typography>
                 <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
-                  20.05.2024
+                {formData.paymentDueDate}
                 </Typography>
               </Grid>
             </Grid>
@@ -148,7 +139,7 @@ const BillView = () => {
       </Paper>
 
       {/* Customer Details */}
-      <Paper elevation={3} sx={{ mb: 3, p: 1 }}> {/* Reduced padding */}
+      <Paper elevation={3} sx={{ mb: 3, p: 1 }}>
         <Grid container justifyContent="space-between">
           <Grid item>
             <Typography variant="h6" sx={{ fontWeight: "bold", fontSize: '1rem' }}> 
@@ -160,28 +151,28 @@ const BillView = () => {
         <Grid container spacing={1} sx={{p:1}}> 
         <Grid item xs={6} sx={{ textAlign: 'left', '@media print': { textAlign: 'left' } }}>
             <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
-              Vehicle No: tN934893443
+              Vehicle No: {formData.vehicleNumber}
             </Typography>
             <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
-              Client Name: Thushari
+              Client Name: {formData.name}
             </Typography>
             <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
-              Service Date: 19.05.2024
+              Service Date: {formData.serviceDate}
             </Typography>
           </Grid>
           <Grid item xs={6} sx={{ textAlign: 'left', '@media print': { textAlign: 'left' } }}>
             <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
-              Address: 28, Asgard, Twiste test address
+              Address: {formData.customerAddress}
             </Typography>
             <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
-              Phone: 08462672367512
+              Phone: {formData.phoneNumber}
             </Typography>
           </Grid>
         </Grid>
       </Paper>
 
       {/* Service and Rate */}
-      <Paper elevation={3} sx={{ mb: 3, p: 1 }}> {/* Reduced padding */}
+      <Paper elevation={3} sx={{ mb: 3, p: 1 }}> 
         <Grid container justifyContent="space-between">
           <Grid item>
             <Typography variant="h6" sx={{ fontWeight: "bold", fontSize: '1rem' }}> 
@@ -194,8 +185,8 @@ const BillView = () => {
             </Typography>
           </Grid>
         </Grid>
-        <Divider sx={{ my: 1 }} /> {/* Reduced margin */}
-        {bill.items.map((item, index) => (
+        <Divider sx={{ my: 1 }} /> 
+        {formData.services.map((item, index) => (
           <Grid container key={index} justifyContent="space-between" sx={{ py: 1 , p:1}}>
             <Grid item>
               <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
@@ -212,44 +203,44 @@ const BillView = () => {
       </Paper>
 
       {/* Subtotal and Final Total */}
-      <Paper elevation={3} sx={{ p: 1 }}> {/* Reduced padding */}
+      <Paper elevation={3} sx={{ p: 1 }}> 
         <Grid container justifyContent="space-between" sx={{p:1}}>
           <Grid item sx={{ textAlign: 'left', '@media print': { width: 'auto' } }}>
-            <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
+            {/* <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
               Tax rate:
             </Typography>
             <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
               Any Discount rate:
-            </Typography>
+            </Typography> */}
             <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
               Sub Total:
             </Typography>
-            <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
+            {/* <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
               Tax amount:
-            </Typography>
+            </Typography> */}
             <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
               Discount amount:
             </Typography>
           </Grid>
           <Grid item sx={{ textAlign: 'right', '@media print': { width: 'auto' } }}>
-            <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
+            {/* <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
               8%
             </Typography>
             <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
               10%
-            </Typography>
+            </Typography> */}
             <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
-              120
+            {formData.subTotal}
             </Typography>
-            <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
+            {/* <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
               12
-            </Typography>
+            </Typography> */}
             <Typography variant="body2" sx={{ fontSize: '0.75rem' }}> 
-              10
+            {formData.discount}
             </Typography>
           </Grid>
         </Grid>
-        <Divider sx={{ my: 1 }} /> {/* Reduced margin */}
+        <Divider sx={{ my: 1 }} /> 
         <Grid container justifyContent="space-between">
           <Grid item>
             <Typography variant="h6" sx={{ fontWeight: "bold", fontSize: '1rem' }}> 
@@ -258,7 +249,7 @@ const BillView = () => {
           </Grid>
           <Grid item>
             <Typography variant="h6" sx={{ fontWeight: "bold", fontSize: '1rem' }}> 
-              100
+            {formData.total}
             </Typography>
           </Grid>
         </Grid>
@@ -271,7 +262,7 @@ const BillView = () => {
             Thank you for having business with us!
           </Typography>
         </Box>
-        <Divider sx={{ my: 1 }} /> {/* Reduced margin */}
+        <Divider sx={{ my: 1 }} /> 
         <Box
           sx={{
             display: 'flex',

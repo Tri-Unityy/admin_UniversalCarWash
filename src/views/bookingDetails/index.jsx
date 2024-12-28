@@ -1,32 +1,52 @@
-import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Typography, Paper, Box } from '@mui/material';
-import MainCard from 'ui-component/cards/MainCard';
-
-
-const bookings = [
-  { id: 1, name: 'John Doe', phoneNumber: '123-456-7890', date: '2024-09-01', timeSlot: '10:00 AM - 11:00 AM', status: 'Confirmed', amount: 150, services: ['Wash', 'Polish'], vehicleType: 'SUV', vehicleNumber: 'ABC123' },
-  { id: 2, name: 'Jane Smith', phoneNumber: '987-654-3210', date: '2024-09-02', timeSlot: '12:00 PM - 1:00 PM', status: 'Pending', amount: 200, services: ['Oil Change', 'Tire Rotation'], vehicleType: 'Sedan', vehicleNumber: 'XYZ789' },
-  { id: 3, name: 'Alice Johnson', phoneNumber: '555-555-5555', date: '2024-09-03', timeSlot: '2:00 PM - 3:00 PM', status: 'Cancelled', amount: 0, services: [], vehicleType: 'Hatchback', vehicleNumber: 'LMN456' },
-  { id: 4, name: 'Bob Brown', phoneNumber: '444-444-4444', date: '2024-09-04', timeSlot: '4:00 PM - 5:00 PM', status: 'Confirmed', amount: 300, services: ['Full Service', 'Wash'], vehicleType: 'SUV', vehicleNumber: 'QWE987' },
-  { id: 5, name: 'Charlie Davis', phoneNumber: '333-333-3333', date: '2024-09-05', timeSlot: '9:00 AM - 10:00 AM', status: 'Pending', amount: 120, services: ['Polish'], vehicleType: 'Truck', vehicleNumber: 'GHI321' },
-  { id: 6, name: 'Emily Evans', phoneNumber: '222-222-2222', date: '2024-09-06', timeSlot: '3:00 PM - 4:00 PM', status: 'Cancelled', amount: 0, services: [], vehicleType: 'Sedan', vehicleNumber: 'JKL654' }
-];
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { doc, getDoc } from "firebase/firestore/lite";
+import { Button, Typography, Paper, Box } from "@mui/material";
+import MainCard from "ui-component/cards/MainCard";
+import { db } from "./../../utils/firebase.config";
 
 const BookingDetails = () => {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const navigate = useNavigate();
+  const [booking, setBooking] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [pickUp, setPickUp] = useState("No");
+
+  useEffect(() => {
+    const fetchBooking = async () => {
+      try {
+        const bookingRef = doc(db, "universal-carwash-booking", id);
+        const bookingSnap = await getDoc(bookingRef);
+
+        if (bookingSnap.exists()) {
+          setBooking({ id: bookingSnap.id, ...bookingSnap.data() });
+        } else {
+          setBooking(null); // Booking not found
+        }
+      } catch (error) {
+        console.error("Error fetching booking:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBooking();
+  }, [id]);
+
+  const handleGenerateBill = () => {
+    navigate(`/generateBill/${id}`, { state: booking });
+  };
 
 
-  const booking = bookings.find((b) => b.id === parseInt(id));
+
+
+  if (loading) {
+    return <Typography variant="h5">Loading booking details...</Typography>;
+  }
 
   if (!booking) {
     return <Typography variant="h5">Booking not found</Typography>;
   }
-
-  const handleGenerateBill = () => {
-    navigate(`/generateBill/${booking.id}`, { state: booking });
-  };
 
   return (
     <MainCard title={`Booking Details for ID: ${booking.id}`}>
@@ -35,35 +55,46 @@ const BookingDetails = () => {
           <Typography variant="h6">Customer Name: {booking.name}</Typography>
         </Box>
         <Box mb={2}>
-          <Typography variant="h6">Phone Number: {booking.phoneNumber}</Typography>
+          <Typography variant="h6">Phone Number: {booking.phone}</Typography>
+        </Box>
+        <Box mb={2}>
+          <Typography variant="h6">Email: {booking.email}</Typography>
         </Box>
         <Box mb={2}>
           <Typography variant="h6">Booking Date: {booking.date}</Typography>
         </Box>
         <Box mb={2}>
-          <Typography variant="h6">Booking Time Slot: {booking.timeSlot}</Typography>
+          <Typography variant="h6">Booking Time Slot: {booking.timeslot}</Typography>
         </Box>
         <Box mb={2}>
-          <Typography variant="h6">Vehicle Type: {booking.vehicleType}</Typography>
+          <Typography variant="h6">Vehicle Type: {booking.carmodel}</Typography>
         </Box>
         <Box mb={2}>
-          <Typography variant="h6">Vehicle No: {booking.vehicleNumber}</Typography>
+          <Typography variant="h6">Vehicle No: {booking.carnumber}</Typography>
+        </Box>
+        <Box mb={2}>
+          <Typography variant="h6">Pick UP: {booking.pickup ? "Yes" : "No"}</Typography>
+        </Box>
+        <Box mb={2}>
+          <Typography variant="h6">Pick UP Address: {booking.pickupAddress}</Typography>
         </Box>
         <Box mb={2}>
           <Typography variant="h6">Status: {booking.status}</Typography>
         </Box>
         <Box mb={2}>
-          <Typography variant="h6">Services: {booking.services.length ? booking.services.join(', ') : 'None'}</Typography>
+          <Typography variant="h6">
+            Services: {booking.services?.length ? booking.services.join(", ") : "None"}
+          </Typography>
         </Box>
         <Box mb={2}>
           <Typography variant="h6">Amount: ${booking.amount}</Typography>
         </Box>
 
         <Box mt={3}>
-        <Button
+          <Button
             variant="outlined"
             color="secondary"
-            onClick={() => navigate('/bookings')}
+            onClick={() => navigate("/bookings")}
             sx={{ marginRight: 2 }}
           >
             Back to Bookings
@@ -71,7 +102,7 @@ const BookingDetails = () => {
           <Button
             variant="contained"
             color="primary"
-            onClick={handleGenerateBill}       
+            onClick={handleGenerateBill}
           >
             Generate Bill
           </Button>

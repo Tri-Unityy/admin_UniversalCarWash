@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -8,35 +8,44 @@ import {
   TableRow,
   Paper,
   TablePagination,
-  Button
-} from '@mui/material';
-import MainCard from 'ui-component/cards/MainCard';
-import { useNavigate } from 'react-router-dom'; 
+  Button,
+  Select,
+  MenuItem,
+} from "@mui/material";
+import MainCard from "ui-component/cards/MainCard";
+import { useNavigate } from "react-router-dom";
+import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore/lite";
+import { db } from "./../../utils/firebase.config";
 
 const Bookings = () => {
   const navigate = useNavigate();
+  const [rows, setRows] = useState([]);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  // Dummy columns data
   const columns = [
-    { id: 'id', label: 'ID' },
-    { id: 'name', label: 'Name' },
-    { id: 'date', label: 'Booking Date' },
-    { id: 'status', label: 'Status' },
-    { id: 'manage', label: 'Manage' }, 
+    { id: "name", label: "Name" },
+    { id: "email", label: "Email" },
+    { id: "phone", label: "Phone" },
+    { id: "date", label: "Booking Date" },
+    { id: "status", label: "Status" },
+    { id: "manage", label: "Manage" },
+    { id: "delete", label: "Delete" },
   ];
 
-  // Dummy rows data
-  const rows = [
-    { id: 1, name: 'John Doe', date: '2024-09-01', status: 'Confirmed' },
-    { id: 2, name: 'Jane Smith', date: '2024-09-02', status: 'Pending' },
-    { id: 3, name: 'Alice Johnson', date: '2024-09-03', status: 'Cancelled' },
-    { id: 4, name: 'Bob Brown', date: '2024-09-04', status: 'Confirmed' },
-    { id: 5, name: 'Charlie Davis', date: '2024-09-05', status: 'Pending' },
-    { id: 6, name: 'Emily Evans', date: '2024-09-06', status: 'Cancelled' },
-  ];
+  useEffect(() => {
+    const fetchBookings = async () => {
+      const bookingsRef = collection(db, "universal-carwash-booking");
+      const querySnapshot = await getDocs(bookingsRef);
+      const bookings = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setRows(bookings);
+    };
 
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+    fetchBookings();
+  }, []);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -47,9 +56,36 @@ const Bookings = () => {
     setPage(0);
   };
 
-  // Function to handle Manage button click
   const handleManageClick = (id) => {
     navigate(`/bookingDetails/${id}`);
+  };
+
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const bookingRef = doc(db, "universal-carwash-booking", id);
+      await updateDoc(bookingRef, { status: newStatus });
+
+      // Update the state to reflect the new status
+      setRows((prevRows) =>
+        prevRows.map((row) =>
+          row.id === id ? { ...row, status: newStatus } : row
+        )
+      );
+    } catch (error) {
+      console.error("Error updating status:", error);
+    }
+  };
+
+  const handleDeleteBooking = async (id) => {
+    try {
+      const bookingRef = doc(db, "universal-carwash-booking", id);
+      await deleteDoc(bookingRef);
+
+      // Remove the deleted booking from the state
+      setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+    } catch (error) {
+      console.error("Error deleting booking:", error);
+    }
   };
 
   return (
@@ -65,22 +101,43 @@ const Bookings = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
-                <TableRow key={row.id}>
-                  {columns.slice(0, -1).map((column) => ( // Skip the last column for "Manage"
-                    <TableCell key={column.id}>{row[column.id]}</TableCell>
-                  ))}
-                  <TableCell>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => handleManageClick(row.id)}
-                    >
-                      Manage
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {rows
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell>{row.name}</TableCell>
+                    <TableCell>{row.email}</TableCell>
+                    <TableCell>{row.phone}</TableCell>
+                    <TableCell>{row.date}</TableCell>
+                    <TableCell>
+                      <Select
+                        value={row.status}
+                        onChange={(e) => handleStatusChange(row.id, e.target.value)}
+                      >
+                        <MenuItem value="Pending">Pending</MenuItem>
+                        <MenuItem value="Confirmed">Confirmed</MenuItem>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => handleManageClick(row.id)}
+                      >
+                        Manage
+                      </Button>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        onClick={() => handleDeleteBooking(row.id)}
+                      >
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </TableContainer>

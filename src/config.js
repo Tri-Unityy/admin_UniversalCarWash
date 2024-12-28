@@ -1,6 +1,6 @@
 const config = {
   basename: '/ucw',
-  defaultPath: '/dashboard/default',
+  defaultPath: '/bookings',
   fontFamily: `'Roboto', sans-serif`,
   borderRadius: 12
 };

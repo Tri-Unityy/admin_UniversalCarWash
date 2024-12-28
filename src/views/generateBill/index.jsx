@@ -3,34 +3,36 @@ import { useLocation } from 'react-router-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, TextField, Typography, Paper, Box } from '@mui/material';
 import MainCard from 'ui-component/cards/MainCard';
+import { getFirestore, doc, updateDoc } from 'firebase/firestore'; // Ensure imports are correct
+import { db } from "./../../utils/firebase.config";// Import your Firebase configuration
 
 const GenerateBill = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const booking = location.state;
+  const booking = location.state || {};
   const currentDate = new Date().toISOString().split('T')[0];
 
   const calculateSubTotal = (services) =>
     services.reduce((sum, service) => sum + (service.price || 0), 0);
 
   const [formData, setFormData] = useState({
-    name: booking?.name || '',
-    phoneNumber: booking?.phoneNumber || '',
-    bookingdate: booking?.date || '',
-    timeSlot: booking?.timeSlot || '',
-    vehicleType: booking?.vehicleType || '',
-    vehicleNumber: booking?.vehicleNumber || '',
+    id : booking.id || '',
+    name: booking.name || '',
+    phoneNumber: booking.phone || '',
+    bookingdate: booking.date || '',
+    timeSlot: booking.timeslot || '',
+    vehicleType: booking.carmodel || '',
+    vehicleNumber: booking.carnumber || '',
     discount: 0,
-    services: booking?.services.map((service) => ({ name: service, price: 0 })) || [],
+    services: booking.services?.map((service) => ({ name: service, price: 0 })) || [],
     paymentDueDate: currentDate,
     serviceDate: currentDate,
-    customerAddress: booking?.customerAddress || '',
+    customerAddress: booking.address || '',
     subTotal: 0,
     total: 0,
   });
 
-  // Calculate subtotal and total whenever services or discount change
   useEffect(() => {
     const subTotal = calculateSubTotal(formData.services);
     const total = subTotal - formData.discount;
@@ -60,13 +62,39 @@ const GenerateBill = () => {
     setFormData((prevData) => ({ ...prevData, services: updatedServices }));
   };
 
-  const handleGenerateBill = () => {
-    console.log('Generated Bill Data:', formData);
-    navigate('/generatedBill', { state: formData });
+  const handleGenerateBill = async () => {
+    try {
+      // Get Firestore instance
+      const db = getFirestore();
+  
+      // Validate booking ID
+      if (!id) {
+        throw new Error('Booking ID is not available');
+      }
+  
+      // Reference to the document in Firestore
+      const bookingDoc = doc(db, 'universal-carwash-booking', id);
+  
+      // Prepare data to add to Firestore
+      const updateData = {
+        services: formData.services, // New field with services array
+        total: formData.total,       // New field with total amount
+      };
+  
+      // Update Firestore document
+      await updateDoc(bookingDoc, updateData);
+  
+      console.log('Generated Bill Data saved to Firestore:', updateData);
+  
+      // Navigate to the generated bill page
+      navigate('/generatedBill', { state: formData });
+    } catch (error) {
+      console.error('Error saving generated bill to Firestore:', error);
+    }
   };
-
+  
   return (
-    <MainCard title={`Generate Bill for Booking ID: ${booking.id}`}>
+    <MainCard title={`Generate Bill for Booking ID: ${id || 'N/A'}`}>
       <Paper sx={{ padding: 3 }}>
         <Box mb={2}>
           <TextField
@@ -173,13 +201,13 @@ const GenerateBill = () => {
               onChange={(e) => handleServiceChange(index, 'name', e.target.value)}
               fullWidth
             />
-          <TextField
-            label="Price"
-            type="number"
-            value={service.price || ""}
-            onChange={(e) => handleServiceChange(index, 'price', e.target.value)}
-            sx={{ width: 120 }}
-          />
+            <TextField
+              label="Price"
+              type="number"
+              value={service.price || ''}
+              onChange={(e) => handleServiceChange(index, 'price', e.target.value)}
+              sx={{ width: 120 }}
+            />
             <Button
               variant="outlined"
               color="error"

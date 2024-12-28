@@ -82,12 +82,13 @@ const BookingDetails = () => {
           <Typography variant="h6">Status: {booking.status}</Typography>
         </Box>
         <Box mb={2}>
-          <Typography variant="h6">
-            Services: {booking.services?.length ? booking.services.join(", ") : "None"}
-          </Typography>
-        </Box>
+  <Typography variant="h6">
+    Services: {booking.services?.length ? booking.services.map(service => service.name).join(", ") : "None"}
+  </Typography>
+</Box>
+
         <Box mb={2}>
-          <Typography variant="h6">Amount: ${booking.amount}</Typography>
+          <Typography variant="h6">Amount: ${booking.total}</Typography>
         </Box>
 
         <Box mt={3}>

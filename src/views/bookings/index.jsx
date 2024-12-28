@@ -116,6 +116,8 @@ const Bookings = () => {
                       >
                         <MenuItem value="Pending">Pending</MenuItem>
                         <MenuItem value="Confirmed">Confirmed</MenuItem>
+                        <MenuItem value="Finished">Finished</MenuItem>
+                        <MenuItem value="Finished">Finished & Delivered</MenuItem>
                       </Select>
                     </TableCell>
                     <TableCell>

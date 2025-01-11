@@ -19,6 +19,7 @@ const BillCreation = Loadable(lazy(() => import('views/billCreation-page')));
 const Bookings = Loadable(lazy(() => import('views/bookings')));
 const BookingDetails = Loadable(lazy(() => import('views/bookingDetails')));
 const GenerateBill = Loadable(lazy(() => import('views/generateBill')));
+const GenerateBillManual = Loadable(lazy(() => import('views/generateBillManual')));
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
@@ -98,6 +99,10 @@ const MainRoutes = {
     {
       path: 'generateBill/:id',
       element: <GenerateBill />
+    },
+    {
+      path: 'generateBillManual',
+      element: <GenerateBillManual />
     }
   ]
 };

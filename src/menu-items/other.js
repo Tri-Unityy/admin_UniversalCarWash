@@ -1,8 +1,8 @@
 // assets
-import { IconBrandChrome, IconHelp } from '@tabler/icons-react';
+import { IconBrandChrome, IconHelp , IconBook, IconFile } from '@tabler/icons-react';
 
 // constant
-const icons = { IconBrandChrome, IconHelp };
+const icons = { IconFile, IconHelp ,IconBook};
 
 // ==============================|| SAMPLE PAGE & DOCUMENTATION MENU ITEMS ||============================== //
 
@@ -23,7 +23,16 @@ const other = {
       title: 'Bookings',
       type: 'item',
       url: '/bookings',
-      icon: icons.IconBrandChrome,
+      icon: icons.IconBook,
+      breadcrumbs: false
+    }
+    ,
+    {
+      id: 'generateBillManual',
+      title: 'GenerateBillManual',
+      type: 'item',
+      url: '/generateBillManual',
+      icon: icons.IconFile,
       breadcrumbs: false
     }
     // {

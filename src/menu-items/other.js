@@ -22,7 +22,7 @@ const other = {
       id: 'bookings',
       title: 'Bookings',
       type: 'item',
-      url: '/bookings',
+      url: '/',
       icon: icons.IconBook,
       breadcrumbs: false
     }

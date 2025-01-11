@@ -89,7 +89,7 @@ const MainRoutes = {
       element: <BillCreation />
     },
     {
-      path: 'bookings',
+      path: '/',
       element: <Bookings />
     },
     {

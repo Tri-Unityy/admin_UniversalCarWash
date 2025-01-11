@@ -127,7 +127,7 @@ const GenerateBillManual = () => {
   
 
   return (
-    <MainCard title={`Generate Bill for Booking ID: ${bookingID }`}>
+    <MainCard title={`Generate Bill: ${bookingID }`}>
       <Paper sx={{ padding: 3 }}>
         <Box mb={2}>
           <TextField fullWidth label="Customer Name" name="name" value={formData.name} onChange={handleInputChange} />

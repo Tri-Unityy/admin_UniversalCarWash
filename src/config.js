@@ -1,5 +1,5 @@
 const config = {
-  basename: '/ucw',
+  basename: '',
   defaultPath: '/bookings',
   fontFamily: `'Roboto', sans-serif`,
   borderRadius: 12

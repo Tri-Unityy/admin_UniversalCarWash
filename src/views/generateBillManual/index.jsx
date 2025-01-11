@@ -85,7 +85,7 @@ const GenerateBillManual = () => {
    
   
       // Reference to the document in Firestore
-      const bookingDocRef = doc(db, 'universal-carwash-booking', bookingID);
+      const bookingDocRef = doc(db, 'universal-carwash-manual-bills', bookingID);
   
       // Check if the document exists
       const bookingDocSnapshot = await getDoc(bookingDocRef);

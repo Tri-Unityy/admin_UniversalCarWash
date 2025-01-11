@@ -174,6 +174,69 @@ const BillView = () => {
             </Typography>
           </Grid>
         </Paper>
+
+
+        {/* Footer Section */}
+        {/* <Paper
+          elevation={3}
+          sx={{
+            mt: 3,
+            p: 1,
+            backgroundColor: 'black',
+            color: 'white',
+            display: 'flex-start',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            '@media print': {
+              flexDirection: 'row',
+              flexWrap: 'nowrap',
+              alignItems: 'center',
+            }
+          }}
+        >
+          <Grid
+            container
+            sx={{
+              flexDirection: 'row',
+              flexWrap: 'nowrap',
+              alignItems: 'center',
+              padding: '10px',
+              width: '100%',
+              '@media print': {
+                flexWrap: 'nowrap',
+              }
+            }}
+          >
+            <Grid item xs={12} md={6} sx={{ textAlign: 'left', '@media print': { width: 'auto' } }}>
+              <Typography variant="h6" sx={{ fontSize: '0.9rem', color: 'white' }}>
+              Thank you for choosing Universal Car Wash.     We look forward to serving you again.
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={6} sx={{ textAlign: 'right', '@media print': { width: 'auto' } }}>
+              <Typography variant="body2" sx={{ fontSize: '0.775rem', color: 'white' }}>
+                Universal Car Wash Sàrl Route de Saint-Georges, 77 1213 Petit Lancy
+              </Typography>
+              <Typography variant="body2" sx={{ fontSize: '0.775rem', color: 'white' }}>
+                Tel: 022 792 22 22
+              </Typography>
+              <Typography variant="body2" sx={{ fontSize: '0.775rem', color: 'white' }}>
+                Email:
+                <a href="mailto:info@theuniversalcarwash.ch" style={{ color: 'white', textDecoration: 'none' }}>
+                 
+                info@theuniversalcarwash.ch 
+                </a>
+              </Typography>
+            </Grid>
+          </Grid>
+          <Grid>
+          <Box>
+                <img src={logo} alt="Company Logo" width={250} />
+              </Box>
+          </Grid>
+        </Paper> */}
+
+
       </div>
 
       {/* Buttons for PDF and Print */}

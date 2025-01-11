@@ -37,7 +37,7 @@ const GenerateBillManual = () => {
     id:  bookingID,
     name: booking.name || '',
     phoneNumber: booking.phone || '',
-    bookingdate: booking.date || '',
+    bookingdate: currentDate ,
     timeSlot: booking.timeslot || '',
     vehicleType: booking.carmodel || '',
     vehicleNumber: booking.carnumber || '',
@@ -145,7 +145,7 @@ const GenerateBillManual = () => {
           />
         </Box>
         <Box mb={2}>
-          <TextField fullWidth label="Booking Date" name="bookingdate" value={formData.bookingdate} onChange={handleInputChange} />
+          <TextField fullWidth label="Booking Date" name="bookingdate" type="date" value={formData.bookingdate} onChange={handleInputChange} />
         </Box>
         <Box mb={2}>
           <TextField fullWidth label="Booking Time Slot" name="timeSlot" value={formData.timeSlot} onChange={handleInputChange} />

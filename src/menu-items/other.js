@@ -31,7 +31,7 @@ const other = {
       id: 'generateBillManual',
       title: 'GenerateBillManual',
       type: 'item',
-      url: '/',
+      url: '/manual',
       icon: icons.IconFile,
       breadcrumbs: false
     }

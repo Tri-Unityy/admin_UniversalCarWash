@@ -27,7 +27,7 @@ const MainRoutes = {
   element: <MainLayout />,
   children: [
     {
-      path: '/',
+      path: '/manual',
       // element: <Bookings />
       element: <GenerateBillManual />
     },
@@ -102,7 +102,7 @@ const MainRoutes = {
       element: <GenerateBill />
     },
     {
-      path: '/',
+      path: '/manual',
       element: <GenerateBillManual />
     }
   ]

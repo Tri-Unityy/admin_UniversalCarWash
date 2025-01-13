@@ -27,7 +27,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
-import User1 from 'assets/images/users/user-round.svg';
+import User1 from 'assets/images/users/user-.png';
 
 // assets
 import { IconLogout, IconSettings } from '@tabler/icons-react';
@@ -86,14 +86,14 @@ const ProfileSection = () => {
           alignItems: 'center',
           borderRadius: '27px',
           transition: 'all .2s ease-in-out',
-          borderColor: theme.palette.primary.light,
-          backgroundColor: theme.palette.primary.light,
+          borderColor: 'black',
+          backgroundColor: 'black',
           '&[aria-controls="menu-list-grow"], &:hover': {
-            borderColor: theme.palette.primary.main,
-            background: `${theme.palette.primary.main}!important`,
-            color: theme.palette.primary.light,
+            borderColor: 'transparent',
+            background: 'transparent',
+            color: 'transparent',
             '& svg': {
-              stroke: theme.palette.primary.light
+              stroke: 'transparent',
             }
           },
           '& .MuiChip-label': {

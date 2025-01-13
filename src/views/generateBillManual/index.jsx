@@ -223,9 +223,6 @@ const GenerateBillManual = () => {
           >
             Generate Bill
           </Button>
-          <Button variant="outlined" color="secondary" onClick={() => navigate(`/bookingDetails/${id}`)}>
-            Back to Booking Details
-          </Button>
         </Box>
       </Paper>
     </MainCard>

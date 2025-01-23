@@ -52,7 +52,8 @@ const GenerateBillManual = () => {
 
   useEffect(() => {
     const subTotal = calculateSubTotal(formData.services);
-    const total = subTotal - (formData.discount) * subTotal / 100;
+
+    const total = subTotal - (formData.discount * subTotal) / 100;
     setFormData((prevData) => ({ ...prevData, subTotal, total }));
   }, [formData.services, formData.discount]);
 
@@ -159,7 +160,7 @@ const GenerateBillManual = () => {
         <Box mb={2}>
                  <TextField fullWidth label="Discount" name="discount" type="number" placeholder='Eg : 10 (Enter the percentage of Discount)' value={formData.discount} onChange={handleInputChange} />
                </Box>
-    
+
         <Box mb={2}>
           <TextField
             fullWidth

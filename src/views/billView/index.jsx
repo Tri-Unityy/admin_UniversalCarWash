@@ -54,7 +54,7 @@ const BillView = () => {
             '@media print': {
               flexDirection: 'row',
               flexWrap: 'nowrap',
-              alignItems: 'center',
+              alignItems: 'center'
             }
           }}
         >
@@ -67,7 +67,7 @@ const BillView = () => {
               padding: '10px',
               width: '100%',
               '@media print': {
-                flexWrap: 'nowrap',
+                flexWrap: 'nowrap'
               }
             }}
           >
@@ -77,11 +77,11 @@ const BillView = () => {
               </Box>
             </Grid>
             <Grid item xs={12} md={10} sx={{ textAlign: 'right', '@media print': { width: 'auto' } }}>
-              <Typography variant="h6" sx={{ fontSize: '1rem', color: 'white' }}>
-                Craft your dream vehicle
+              <Typography variant="body2" sx={{ fontSize: '0.775rem', color: 'white' }}>
+              Universal car wash sàrl
               </Typography>
               <Typography variant="body2" sx={{ fontSize: '0.775rem', color: 'white' }}>
-                Universal Car Wash Sàrl Route de Saint-Georges, 77 1213 Petit Lancy
+              Rte de Saint-Georges 77, 1213 Petit-Lancy
               </Typography>
             </Grid>
           </Grid>
@@ -90,22 +90,22 @@ const BillView = () => {
         {/* Main Information */}
         <Paper elevation={3} sx={{ mb: 3, p: 1 }}>
           <Grid container>
-            <Grid item xs={12} md={6}>
-              <Typography sx={{ fontSize: '0.875rem', textAlign: 'left' }}>
-                Universal Car Wash Sàrl Genève, le 16 octobre 2023
-                <br />
-                MARC ROBIN Automobile SA Route de Saint-Georges, 85 1213 Petit-Lancy
-              </Typography>
-            </Grid>
+            <Grid item xs={12} md={6}></Grid>
             <Grid item xs={12} md={6} sx={{ textAlign: 'right' }}>
               <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>
-                Date: {formData.serviceDate}
+                Date:{' '}
+                {new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(
+                  new Date(formData.serviceDate)
+                )}
               </Typography>
               <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>
                 Invoice No: {formData.id}
               </Typography>
               <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>
-                Payment Due Date: {formData.paymentDueDate}
+                Due Date:{' '}
+                {new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(
+                  new Date(formData.paymentDueDate)
+                )}
               </Typography>
             </Grid>
           </Grid>
@@ -113,7 +113,7 @@ const BillView = () => {
 
         {/* Customer Details */}
         <Paper elevation={3} sx={{ mb: 3, p: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: "bold", fontSize: '1rem' }}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1rem' }}>
             Customer Details
           </Typography>
           <Divider sx={{ my: 1 }} />
@@ -121,7 +121,12 @@ const BillView = () => {
             <Grid item xs={6}>
               <Typography variant="body2">Vehicle No: {formData.vehicleNumber}</Typography>
               <Typography variant="body2">Client Name: {formData.name}</Typography>
-              <Typography variant="body2">Service Date: {formData.serviceDate}</Typography>
+              <Typography variant="body2">
+                Service Date:{' '}
+                {new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(
+                  new Date(formData.serviceDate)
+                )}
+              </Typography>
             </Grid>
             <Grid item xs={6}>
               <Typography variant="body2">Address: {formData.customerAddress}</Typography>
@@ -131,12 +136,12 @@ const BillView = () => {
         </Paper>
 
         {/* Service Details */}
-        <Paper elevation={3} sx={{ mb: 3, p: 1 }}>
+        <Paper elevation={3} sx={{ mb: 3, p: 1 ,minHeight:250}}>
           <Grid container justifyContent="space-between">
-            <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
               Service
             </Typography>
-            <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
               Rate (CHF)
             </Typography>
           </Grid>
@@ -150,7 +155,7 @@ const BillView = () => {
         </Paper>
 
         {/* Subtotal, Discount, and Final Total */}
-        <Paper elevation={3} sx={{ p: 1 }}>
+        <Paper elevation={3} sx={{ p: 1 ,minHeight:150}}>
           <Grid container justifyContent="space-between">
             <Typography>Sub Total:</Typography>
             <Typography>{formData.subTotal} CHF</Typography>
@@ -166,77 +171,44 @@ const BillView = () => {
           )}
           <Divider sx={{ my: 1 }} />
           <Grid container justifyContent="space-between">
-            <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
               Final Total:
             </Typography>
-            <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
               {calculateFinalTotal()} CHF
             </Typography>
           </Grid>
         </Paper>
 
-
-        {/* Footer Section */}
-        {/* <Paper
-          elevation={3}
+            {/* Footer */}
+      <Paper elevation={3} sx={{ mt: 3, p: 2, bgcolor: 'black', color: 'white',mb:0}}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Typography variant="h5" sx={{ color: '#FF2400', fontWeight: 'bold', fontSize: '1.25rem' }}>
+            Thank you for having business with us!
+          </Typography>
+        </Box>
+        <Divider sx={{ my: 1 }} /> {/* Reduced margin */}
+        <Box
           sx={{
-            mt: 3,
-            p: 1,
-            backgroundColor: 'black',
-            color: 'white',
-            display: 'flex-start',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'flex-start',
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
             '@media print': {
+              display: 'flex',
               flexDirection: 'row',
-              flexWrap: 'nowrap',
-              alignItems: 'center',
+              flexWrap: 'wrap',
+              alignItems: 'flex-start'
             }
           }}
         >
-          <Grid
-            container
-            sx={{
-              flexDirection: 'row',
-              flexWrap: 'nowrap',
-              alignItems: 'center',
-              padding: '10px',
-              width: '100%',
-              '@media print': {
-                flexWrap: 'nowrap',
-              }
-            }}
-          >
-            <Grid item xs={12} md={6} sx={{ textAlign: 'left', '@media print': { width: 'auto' } }}>
-              <Typography variant="h6" sx={{ fontSize: '0.9rem', color: 'white' }}>
-              Thank you for choosing Universal Car Wash.     We look forward to serving you again.
-              </Typography>
-            </Grid>
-            <Grid item xs={12} md={6} sx={{ textAlign: 'right', '@media print': { width: 'auto' } }}>
-              <Typography variant="body2" sx={{ fontSize: '0.775rem', color: 'white' }}>
-                Universal Car Wash Sàrl Route de Saint-Georges, 77 1213 Petit Lancy
-              </Typography>
-              <Typography variant="body2" sx={{ fontSize: '0.775rem', color: 'white' }}>
-                Tel: 022 792 22 22
-              </Typography>
-              <Typography variant="body2" sx={{ fontSize: '0.775rem', color: 'white' }}>
-                Email:
-                <a href="mailto:info@theuniversalcarwash.ch" style={{ color: 'white', textDecoration: 'none' }}>
-                 
-                info@theuniversalcarwash.ch 
-                </a>
-              </Typography>
-            </Grid>
-          </Grid>
-          <Grid>
-          <Box>
-                <img src={logo} alt="Company Logo" width={250} />
-              </Box>
-          </Grid>
-        </Paper> */}
-
-
+          <Typography variant="body2" sx={{ color: 'white', fontSize: '0.775rem' }}>
+            info@theuniversalcarwash.ch
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'white', fontSize: '0.775rem' }}>
+          +41 793270036
+          </Typography>
+        </Box>
+      </Paper>
       </div>
 
       {/* Buttons for PDF and Print */}

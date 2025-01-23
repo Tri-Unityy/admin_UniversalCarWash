@@ -33,7 +33,7 @@ const BillView = () => {
   // Calculate final total with discount (if applicable)
   const calculateFinalTotal = () => {
     const discount = formData.discount || 0; // Default to 0 if no discount is provided
-    return formData.subTotal - discount;
+    return formData.subTotal - (discount * formData.subTotal) / 100;
   };
 
   return (
@@ -165,7 +165,7 @@ const BillView = () => {
               <Divider sx={{ my: 1 }} />
               <Grid container justifyContent="space-between">
                 <Typography>Discount:</Typography>
-                <Typography>-{formData.discount} CHF</Typography>
+                <Typography>-{(formData.discount * formData.subTotal) / 100} CHF</Typography>
               </Grid>
             </>
           )}

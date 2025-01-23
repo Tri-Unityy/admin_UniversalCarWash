@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, TextField, Typography, Paper, Box } from '@mui/material';
+import { Button, TextField, Typography, Paper, Box,CircularProgress } from '@mui/material';
 import MainCard from 'ui-component/cards/MainCard';
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';// Ensure imports are correct
 import { db } from './../../utils/firebase.config'; // Import your Firebase configuration
@@ -11,6 +11,7 @@ const GenerateBillManual = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const booking = location.state || {};
+  const [loading, setLoading] = useState(false);
   const currentDate = new Date().toISOString().split('T')[0];
 
   const calculateSubTotal = (services) => services.reduce((sum, service) => sum + (service.price || 0), 0);
@@ -47,7 +48,7 @@ const GenerateBillManual = () => {
     serviceDate: currentDate,
     customerAddress: booking.address || '',
     subTotal: booking.total || 0,
-    total: booking.total || 0
+    total: booking.total || 0,
   });
 
   useEffect(() => {
@@ -82,6 +83,7 @@ const GenerateBillManual = () => {
 
   const handleGenerateBillManual = async () => {
     try {
+      setLoading(true); 
       const db = getFirestore(); // Get Firestore instance
    
   
@@ -122,6 +124,8 @@ const GenerateBillManual = () => {
       navigate('/generatedBill', { state: { ...formData, id: bookingID } });
     } catch (error) {
       console.error('Error handling booking ID:', error);
+    } finally {
+      setLoading(false);
     }
   };
   
@@ -220,9 +224,9 @@ const GenerateBillManual = () => {
             color="primary"
             onClick={handleGenerateBillManual}
             sx={{ marginRight: 2 }}
-            disabled={formData.services.some((service) => !service.price)}
+            disabled={loading || formData.services.some((service) => !service.price)}
           >
-            Generate Bill
+            {loading ? <CircularProgress size={24} color="inherit" /> : 'Generate Bill'}
           </Button>
         </Box>
       </Paper>

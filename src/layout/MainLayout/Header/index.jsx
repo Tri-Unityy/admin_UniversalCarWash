@@ -23,7 +23,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
 
   return (
     <>
-    <div style={{backgroundColor:'black',display:'flex',flexDirection:'row',width:'100%'}}>
+    <div style={{backgroundColor:'black',display:'flex',flexDirection:'row',width:'100%',borderRadius:"25px"}}>
       {/* logo & toggler button */}
       <Box
         sx={{

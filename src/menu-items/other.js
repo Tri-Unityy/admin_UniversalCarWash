@@ -18,20 +18,20 @@ const other = {
     //   icon: icons.IconBrandChrome,
     //   breadcrumbs: false
     // },
-    {
-      id: 'bookings',
-      title: 'Bookings',
-      type: 'item',
-      url: '/',
-      icon: icons.IconBook,
-      breadcrumbs: false
-    }
-    ,
+    // {
+    //   id: 'bookings',
+    //   title: 'Bookings',
+    //   type: 'item',
+    //   url: '/',
+    //   icon: icons.IconBook,
+    //   breadcrumbs: false
+    // }
+    // ,
     {
       id: 'generateBillManual',
       title: 'GenerateBillManual',
       type: 'item',
-      url: '/generateBillManual',
+      url: '/manual',
       icon: icons.IconFile,
       breadcrumbs: false
     }

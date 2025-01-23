@@ -179,6 +179,7 @@ const BillView = () => {
             </Typography>
           </Grid>
         </Paper>
+
             {/* Footer */}
       <Paper elevation={3} sx={{ mt: 3, p: 2, bgcolor: 'black', color: 'white',mb:0}}>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

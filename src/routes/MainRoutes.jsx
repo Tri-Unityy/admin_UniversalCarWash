@@ -27,8 +27,9 @@ const MainRoutes = {
   element: <MainLayout />,
   children: [
     {
-      path: '/',
-      element: <Bookings />
+      path: '/manual',
+      // element: <Bookings />
+      element: <GenerateBillManual />
     },
     {
       path: 'dashboard',
@@ -88,10 +89,10 @@ const MainRoutes = {
       path: 'billCreation-page',
       element: <BillCreation />
     },
-    {
-      path: '/',
-      element: <Bookings />
-    },
+    // {
+    //   path: '/bookings',
+    //   element: <Bookings />
+    // },
     {
       path: 'bookingDetails/:id',
       element: <BookingDetails />
@@ -101,7 +102,7 @@ const MainRoutes = {
       element: <GenerateBill />
     },
     {
-      path: 'generateBillManual',
+      path: '/manual',
       element: <GenerateBillManual />
     }
   ]

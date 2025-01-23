@@ -14,9 +14,6 @@ import Logo from 'ui-component/Logo';
 import AuthRegister from '../authentication/auth-forms/AuthRegister';
 import AuthFooter from 'ui-component/cards/AuthFooter';
 
-// assets
-
-// ===============================|| AUTH3 - REGISTER ||=============================== //
 
 const Register = () => {
   const downMD = useMediaQuery((theme) => theme.breakpoints.down('md'));
@@ -29,7 +26,7 @@ const Register = () => {
             <Grid item sx={{ m: { xs: 1, sm: 3 }, mb: 0 }}>
               <AuthCardWrapper>
                 <Grid container spacing={2} alignItems="center" justifyContent="center">
-                  <Grid item sx={{ mb: 3 }}>
+                <Grid item sx={{ mb: 3 , backgroundColor: 'black' , justifyContent: 'center',alignItems: 'center',paddingRight: '15px', borderRadius: '10px'}}>
                     <Link to="#" aria-label="theme logo">
                       <Logo />
                     </Link>
@@ -56,7 +53,7 @@ const Register = () => {
                   </Grid>
                   <Grid item xs={12}>
                     <Grid item container direction="column" alignItems="center" xs={12}>
-                      <Typography component={Link} to="/pages/login/login3" variant="subtitle1" sx={{ textDecoration: 'none' }}>
+                      <Typography component={Link} to="/" variant="subtitle1" sx={{ textDecoration: 'none' }}>
                         Already have an account?
                       </Typography>
                     </Grid>

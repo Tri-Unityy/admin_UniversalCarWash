@@ -37,7 +37,7 @@ const GenerateBillManual = () => {
     id:  bookingID,
     name: booking.name || '',
     phoneNumber: booking.phone || '',
-    bookingdate: booking.date || '',
+    bookingdate: currentDate ,
     timeSlot: booking.timeslot || '',
     vehicleType: booking.carmodel || '',
     vehicleNumber: booking.carnumber || '',
@@ -52,6 +52,7 @@ const GenerateBillManual = () => {
 
   useEffect(() => {
     const subTotal = calculateSubTotal(formData.services);
+
     const total = subTotal - (formData.discount * subTotal) / 100;
     setFormData((prevData) => ({ ...prevData, subTotal, total }));
   }, [formData.services, formData.discount]);
@@ -85,7 +86,7 @@ const GenerateBillManual = () => {
    
   
       // Reference to the document in Firestore
-      const bookingDocRef = doc(db, 'universal-carwash-booking', bookingID);
+      const bookingDocRef = doc(db, 'universal-carwash-manual-bills', bookingID);
   
       // Check if the document exists
       const bookingDocSnapshot = await getDoc(bookingDocRef);
@@ -145,7 +146,7 @@ const GenerateBillManual = () => {
           />
         </Box>
         <Box mb={2}>
-          <TextField fullWidth label="Booking Date" name="bookingdate" value={formData.bookingdate} onChange={handleInputChange} />
+          <TextField fullWidth label="Booking Date" name="bookingdate" type="date" value={formData.bookingdate} onChange={handleInputChange} />
         </Box>
         <Box mb={2}>
           <TextField fullWidth label="Booking Time Slot" name="timeSlot" value={formData.timeSlot} onChange={handleInputChange} />
@@ -159,6 +160,7 @@ const GenerateBillManual = () => {
         <Box mb={2}>
                  <TextField fullWidth label="Discount" name="discount" type="number" placeholder='Eg : 10 (Enter the percentage of Discount)' value={formData.discount} onChange={handleInputChange} />
                </Box>
+
         <Box mb={2}>
           <TextField
             fullWidth
@@ -221,9 +223,6 @@ const GenerateBillManual = () => {
             disabled={formData.services.some((service) => !service.price)}
           >
             Generate Bill
-          </Button>
-          <Button variant="outlined" color="secondary" onClick={() => navigate(`/bookingDetails/${id}`)}>
-            Back to Booking Details
           </Button>
         </Box>
       </Paper>

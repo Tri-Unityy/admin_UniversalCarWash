@@ -1,6 +1,6 @@
 const config = {
   basename: '',
-  defaultPath: '/bookings',
+  defaultPath: '/manual',
   fontFamily: `'Roboto', sans-serif`,
   borderRadius: 12
 };

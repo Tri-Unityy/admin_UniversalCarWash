@@ -13,7 +13,13 @@ const GenerateBillManual = () => {
   const booking = location.state || {};
   const currentDate = new Date().toISOString().split('T')[0];
 
-  const calculateSubTotal = (services) => services.reduce((sum, service) => sum + (service.price || 0), 0);
+  const calculateSubTotal = (vehicles) =>
+    vehicles.reduce(
+      (sum, vehicle) =>
+        sum + vehicle.services.reduce((vSum, s) => vSum + (s.price || 0), 0),
+      0
+    );
+  
   const generateBookingID = () => {
     const now = new Date();
     
@@ -34,50 +40,78 @@ const GenerateBillManual = () => {
   const [bookingID,setBookingID] = useState(generateBookingID());
 
   const [formData, setFormData] = useState({
-    id:  bookingID,
+    id: bookingID,
     name: booking.name || '',
     phoneNumber: booking.phone || '',
-    bookingdate: currentDate ,
-    timeSlot: booking.timeslot || '',
-    vehicleType: booking.carmodel || '',
-    vehicleNumber: booking.carnumber || '',
+    bookingdate: currentDate,
     discount: 0,
-    services: booking.services?.map((service) => ({ name: service.name, price: service.price })) || [],
+    vehicles: booking.vehicles || [
+      {
+        vehicleType: booking.carmodel || '',
+        vehicleNumber: booking.carnumber || '',
+        services: booking.services?.map((s) => ({ name: s.name, price: s.price })) || []
+      }
+    ],
     paymentDueDate: currentDate,
     serviceDate: currentDate,
     customerAddress: booking.address || '',
     subTotal: booking.total || 0,
     total: booking.total || 0
   });
+  
 
   useEffect(() => {
-    const subTotal = calculateSubTotal(formData.services);
-
+    const subTotal = calculateSubTotal(formData.vehicles);
     const total = subTotal - (formData.discount * subTotal) / 100;
-    setFormData((prevData) => ({ ...prevData, subTotal, total }));
-  }, [formData.services, formData.discount]);
-
+    setFormData((prev) => ({ ...prev, subTotal, total }));
+  }, [formData.vehicles, formData.discount]);
+  
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  const handleAddService = () => {
+  const handleAddVehicle = () => {
     setFormData((prevData) => ({
       ...prevData,
-      services: [...prevData.services, { name: '', price: 0 }]
+      vehicles: [
+        ...prevData.vehicles,
+        {
+          vehicleType: '',
+          vehicleNumber: '',
+          services: []
+        }
+      ]
     }));
   };
 
-  const handleServiceChange = (index, field, value) => {
-    const updatedServices = [...formData.services];
-    updatedServices[index][field] = field === 'price' ? parseFloat(value) || 0 : value;
-    setFormData((prevData) => ({ ...prevData, services: updatedServices }));
+  const handleRemoveVehicle = (index) => {
+    const updated = formData.vehicles.filter((_, i) => i !== index);
+    setFormData((prev) => ({ ...prev, vehicles: updated }));
   };
 
-  const handleRemoveService = (index) => {
-    const updatedServices = formData.services.filter((_, i) => i !== index);
-    setFormData((prevData) => ({ ...prevData, services: updatedServices }));
+  const handleVehicleChange = (index, field, value) => {
+    const updated = [...formData.vehicles];
+    updated[index][field] = value;
+    setFormData((prev) => ({ ...prev, vehicles: updated }));
+  };
+
+  const handleVehicleServiceChange = (vIndex, sIndex, field, value) => {
+    const updatedVehicles = [...formData.vehicles];
+    updatedVehicles[vIndex].services[sIndex][field] = field === 'price' ? parseFloat(value) || 0 : value;
+    setFormData((prev) => ({ ...prev, vehicles: updatedVehicles }));
+  };
+  
+  const handleAddServiceToVehicle = (vIndex) => {
+    const updatedVehicles = [...formData.vehicles];
+    updatedVehicles[vIndex].services.push({ name: '', price: 0 });
+    setFormData((prev) => ({ ...prev, vehicles: updatedVehicles }));
+  };
+  
+  const handleRemoveServiceFromVehicle = (vIndex, sIndex) => {
+    const updatedVehicles = [...formData.vehicles];
+    updatedVehicles[vIndex].services = updatedVehicles[vIndex].services.filter((_, i) => i !== sIndex);
+    setFormData((prev) => ({ ...prev, vehicles: updatedVehicles }));
   };
 
   const handleGenerateBillManual = async () => {
@@ -98,17 +132,15 @@ const GenerateBillManual = () => {
           name: formData.name,
           phoneNumber: formData.phoneNumber,
           bookingDate: formData.bookingdate,
-          timeSlot: formData.timeSlot,
-          vehicleType: formData.vehicleType,
-          vehicleNumber: formData.vehicleNumber,
           discount: formData.discount,
-          services: formData.services,
+          vehicles: formData.vehicles,
           paymentDueDate: formData.paymentDueDate,
           serviceDate: formData.serviceDate,
           customerAddress: formData.customerAddress,
           subTotal: formData.subTotal,
           total: formData.total,
         };
+        
   
         // Save the new document in Firestore
         await setDoc(bookingDocRef, saveData);
@@ -152,14 +184,8 @@ const GenerateBillManual = () => {
           <TextField fullWidth label="Booking Time Slot" name="timeSlot" value={formData.timeSlot} onChange={handleInputChange} />
         </Box>
         <Box mb={2}>
-          <TextField fullWidth label="Vehicle Type" name="vehicleType" value={formData.vehicleType} onChange={handleInputChange} />
+          <TextField fullWidth label="Discount" name="discount" type="number" placeholder='Eg : 10 (Enter the percentage of Discount)' value={formData.discount} onChange={handleInputChange} />
         </Box>
-        <Box mb={2}>
-          <TextField fullWidth label="Vehicle Number" name="vehicleNumber" value={formData.vehicleNumber} onChange={handleInputChange} />
-        </Box>
-        <Box mb={2}>
-                 <TextField fullWidth label="Discount" name="discount" type="number" placeholder='Eg : 10 (Enter the percentage of Discount)' value={formData.discount} onChange={handleInputChange} />
-               </Box>
 
         <Box mb={2}>
           <TextField
@@ -184,30 +210,28 @@ const GenerateBillManual = () => {
         <Typography variant="h6" gutterBottom>
           Services
         </Typography>
-        {formData.services.map((service, index) => (
-          <Box key={index} display="flex" alignItems="center" gap={2} mb={2}>
-            <TextField
-              label="Service Name"
-              value={service.name}
-              onChange={(e) => handleServiceChange(index, 'name', e.target.value)}
-              fullWidth
-            />
-            <TextField
-              label="Price"
-              type="number"
-              value={service.price || ''}
-              onChange={(e) => handleServiceChange(index, 'price', e.target.value)}
-              sx={{ width: 120 }}
-            />
-            <Button variant="outlined" color="error" onClick={() => handleRemoveService(index)}>
-              Remove
-            </Button>
-          </Box>
-        ))}
+        {formData.vehicles.map((vehicle, vIndex) => (
+        <Box key={vIndex} mb={4} p={2} border="1px solid #ccc" borderRadius={2}>
+          <Typography variant="subtitle1" mb={1}>Vehicle #{vIndex + 1}</Typography>
+          <TextField fullWidth label="Vehicle Type" value={vehicle.vehicleType} onChange={(e) => handleVehicleChange(vIndex, 'vehicleType', e.target.value)} sx={{ mb: 2 }} />
+          <TextField fullWidth label="Vehicle Number" value={vehicle.vehicleNumber} onChange={(e) => handleVehicleChange(vIndex, 'vehicleNumber', e.target.value)} sx={{ mb: 2 }} />
 
-        <Button variant="outlined" onClick={handleAddService} sx={{ mb: 2 }}>
-          Add Service
-        </Button>
+          <Typography variant="body1" mb={1}>Services</Typography>
+          {vehicle.services.map((service, sIndex) => (
+            <Box key={sIndex} display="flex" gap={2} alignItems="center" mb={1}>
+              <TextField label="Service Name" value={service.name} onChange={(e) => handleVehicleServiceChange(vIndex, sIndex, 'name', e.target.value)} />
+              <TextField label="Price" type="number" value={service.price || ''} onChange={(e) => handleVehicleServiceChange(vIndex, sIndex, 'price', e.target.value)} />
+              <Button variant="outlined" color="error" onClick={() => handleRemoveServiceFromVehicle(vIndex, sIndex)}>Remove</Button>
+            </Box>
+          ))}
+          <Button variant="outlined" onClick={() => handleAddServiceToVehicle(vIndex)}>Add Service</Button>
+          <Button variant="outlined" color="error" onClick={() => handleRemoveVehicle(vIndex)} sx={{ ml: 2 }}>Remove Vehicle</Button>
+        </Box>
+      ))}
+
+      <Button variant="outlined" onClick={handleAddVehicle} sx={{ mb: 2 }}>
+        Add Vehicle
+      </Button>
 
         <Box mb={2}>
           <Typography variant="subtitle1">Subtotal: {formData.subTotal.toFixed(2)}</Typography>
@@ -220,7 +244,11 @@ const GenerateBillManual = () => {
             color="primary"
             onClick={handleGenerateBillManual}
             sx={{ marginRight: 2 }}
-            disabled={formData.services.some((service) => !service.price)}
+            disabled={
+              formData.vehicles.some(vehicle =>
+                vehicle.services.some(service => !service.price)
+              )
+            }            
           >
             Generate Bill
           </Button>

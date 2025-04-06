@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { Box, Typography, Grid, Paper, Divider, Button } from "@mui/material";
+import { Box, Typography, Grid, Paper, Divider, Button, TableContainer, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
 import logo from "../../assets/images/Carwash.png";
 import { useLocation } from 'react-router-dom';
 import html2pdf from "html2pdf.js";
@@ -78,10 +78,10 @@ const BillView = () => {
             </Grid>
             <Grid item xs={12} md={10} sx={{ textAlign: 'right', '@media print': { width: 'auto' } }}>
               <Typography variant="body2" sx={{ fontSize: '0.775rem', color: 'white' }}>
-              Universal car wash sàrl
+                Universal car wash sàrl
               </Typography>
               <Typography variant="body2" sx={{ fontSize: '0.775rem', color: 'white' }}>
-              Rte de Saint-Georges 77, 1213 Petit-Lancy
+                Rte de Saint-Georges 77, 1213 Petit-Lancy, Geneva
               </Typography>
             </Grid>
           </Grid>
@@ -93,17 +93,17 @@ const BillView = () => {
             <Grid item xs={12} md={6}></Grid>
             <Grid item xs={12} md={6} sx={{ textAlign: 'right' }}>
               <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>
-                Date:{' '}
-                {new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(
+                Date :{' '}
+                {new Intl.DateTimeFormat('fr-CH', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(
                   new Date(formData.serviceDate)
                 )}
               </Typography>
               <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>
-                Invoice No: {formData.id}
+                Facture n° : {formData.id}
               </Typography>
               <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>
-                Due Date:{' '}
-                {new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(
+                Merci de payer avant le :{' '}
+                {new Intl.DateTimeFormat('fr-CH', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(
                   new Date(formData.paymentDueDate)
                 )}
               </Typography>
@@ -114,29 +114,57 @@ const BillView = () => {
         {/* Customer Details */}
         <Paper elevation={3} sx={{ mb: 3, p: 1 }}>
           <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1rem' }}>
-            Customer Details
+            Détails du client
           </Typography>
           <Divider sx={{ my: 1 }} />
           <Grid container spacing={1}>
             <Grid item xs={6}>
-              <Typography variant="body2">Vehicle No: {formData.vehicleNumber}</Typography>
-              <Typography variant="body2">Client Name: {formData.name}</Typography>
+              <Typography variant="body2">Nom : {formData.name}</Typography>
               <Typography variant="body2">
-                Service Date:{' '}
+                Date du service :{' '}
                 {new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(
                   new Date(formData.serviceDate)
                 )}
               </Typography>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="body2">Address: {formData.customerAddress}</Typography>
-              <Typography variant="body2">Phone: {formData.phoneNumber}</Typography>
+              <Typography variant="body2">Adresse : {formData.customerAddress}</Typography>
+              <Typography variant="body2">Téléphone : {formData.phoneNumber}</Typography>
             </Grid>
           </Grid>
         </Paper>
 
+        {/* Vehicle-wise Service Details */}
+        <TableContainer component={Paper} sx={{ mt: 2 }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                <TableCell sx={{ fontWeight: 'bold', width: '35%' }}>Véhicule</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', width: '50%' }}>Service</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 'bold', width: '15%' }}>Tarif (CHF)</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {formData.vehicles.map((vehicle, vIndex) =>
+                vehicle.services.map((service, sIndex) => (
+                  <TableRow key={`${vIndex}-${sIndex}`}>
+                    <TableCell>   
+                        <Typography sx={{ fontWeight: 'medium' }}>
+                          {vehicle.vehicleType} - {vehicle.vehicleNumber}
+                        </Typography>
+                    </TableCell>
+                    <TableCell>{service.name}</TableCell>
+                    <TableCell align="right">{service.price}</TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+
         {/* Service Details */}
-        <Paper elevation={3} sx={{ mb: 3, p: 1 ,minHeight:250}}>
+        {/* <Paper elevation={3} sx={{ mb: 3, p: 1 ,minHeight:250}}>
           <Grid container justifyContent="space-between">
             <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
               Service
@@ -152,19 +180,19 @@ const BillView = () => {
               <Typography>{item.price}</Typography>
             </Grid>
           ))}
-        </Paper>
+        </Paper> */}
 
         {/* Subtotal, Discount, and Final Total */}
-        <Paper elevation={3} sx={{ p: 1 ,minHeight:150}}>
+        <Paper elevation={3} sx={{ p: 1, minHeight: 150 ,my: 1 }}>
           <Grid container justifyContent="space-between">
-            <Typography>Sub Total:</Typography>
+            <Typography>Sous-total :</Typography>
             <Typography>{formData.subTotal} CHF</Typography>
           </Grid>
           {formData.discount > 0 && (
             <>
               <Divider sx={{ my: 1 }} />
               <Grid container justifyContent="space-between">
-                <Typography>Discount:</Typography>
+                <Typography>Remise :</Typography>
                 <Typography>-{formData.discount} CHF</Typography>
               </Grid>
             </>
@@ -180,48 +208,49 @@ const BillView = () => {
           </Grid>
         </Paper>
 
-            {/* Footer */}
-      <Paper elevation={3} sx={{ mt: 3, p: 2, bgcolor: 'black', color: 'white',mb:0}}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Typography variant="h5" sx={{ color: '#FF2400', fontWeight: 'bold', fontSize: '1.25rem' }}>
-            Thank you for having business with us!
-          </Typography>
-        </Box>
-        <Divider sx={{ my: 1 }} /> {/* Reduced margin */}
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            '@media print': {
+        {/* Footer */}
+        <Paper elevation={3} sx={{ mt: 3, p: 2, bgcolor: 'black', color: 'white', mb: 0 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Typography variant="h5" sx={{ color: '#FF2400', fontWeight: 'bold', fontSize: '1.25rem' }}>
+              Merci pour votre confiance !
+            </Typography>
+          </Box>
+          <Divider sx={{ my: 1 }} />
+          <Box
+            sx={{
               display: 'flex',
               flexDirection: 'row',
-              flexWrap: 'wrap',
-              alignItems: 'flex-start'
-            }
-          }}
-        >
-          <Typography variant="body2" sx={{ color: 'white', fontSize: '0.775rem' }}>
-            info@theuniversalcarwash.ch
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'white', fontSize: '0.775rem' }}>
-          +41 793270036
-          </Typography>
-        </Box>
-      </Paper>
+              justifyContent: 'space-between',
+              '@media print': {
+                display: 'flex',
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                alignItems: 'flex-start'
+              }
+            }}
+          >
+            <Typography variant="body2" sx={{ color: 'white', fontSize: '0.775rem' }}>
+              info@theuniversalcarwash.ch
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'white', fontSize: '0.775rem' }}>
+              +41 793270036
+            </Typography>
+          </Box>
+        </Paper>
       </div>
 
       {/* Buttons for PDF and Print */}
       <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', gap: 2 }}>
         <Button variant="contained" color="secondary" onClick={() => window.history.back()}>
-          Back
+          Retour
         </Button>
         <Button variant="contained" color="primary" onClick={handleGeneratePDF}>
-          Convert to PDF
+          Convertir en PDF
         </Button>
         <Button variant="contained" color="secondary" onClick={handlePrint}>
-          Print Receipt
+          Imprimer le reçu
         </Button>
+
       </Box>
     </Box>
   );

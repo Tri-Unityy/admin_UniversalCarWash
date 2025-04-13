@@ -44,7 +44,10 @@ const GenerateBillManual = () => {
     name: booking.name || '',
     phoneNumber: booking.phone || '',
     bookingdate: currentDate,
+    billReference: booking.billReference || '',
+    timeSlot: booking.timeSlot || '',
     discount: 0,
+    discountValue: 0,
     vehicles: booking.vehicles || [
       {
         vehicleType: booking.carmodel || '',
@@ -60,10 +63,29 @@ const GenerateBillManual = () => {
   });
   
 
+  const isFormValid = () => {
+    if (!formData.name.trim()) return false;
+    if (formData.vehicles.length === 0) return false;
+  
+    for (const vehicle of formData.vehicles) {
+      if (!vehicle.services || vehicle.services.length === 0) return false;
+  
+      for (const service of vehicle.services) {
+        if (!service.name || service.price === undefined || service.price === '') {
+          return false;
+        }
+      }
+    }
+  
+    return true;
+  };
+  
+
   useEffect(() => {
     const subTotal = calculateSubTotal(formData.vehicles);
-    const total = subTotal - (formData.discount * subTotal) / 100;
-    setFormData((prev) => ({ ...prev, subTotal, total }));
+    const discountValue = (formData.discount * subTotal) / 100;
+    const total = subTotal - discountValue;
+    setFormData((prev) => ({ ...prev, subTotal, total,discountValue }));
   }, [formData.vehicles, formData.discount]);
   
   const handleInputChange = (e) => {
@@ -118,7 +140,10 @@ const GenerateBillManual = () => {
     try {
       const db = getFirestore(); // Get Firestore instance
    
-  
+      if (!isFormValid()) {
+        alert('Please fill in all required fields correctly.');
+        return;
+      }
       // Reference to the document in Firestore
       const bookingDocRef = doc(db, 'universal-carwash-manual-bills', bookingID);
   
@@ -139,6 +164,9 @@ const GenerateBillManual = () => {
           customerAddress: formData.customerAddress,
           subTotal: formData.subTotal,
           total: formData.total,
+          billReference: formData.billReference,
+          timeSlot: formData.timeSlot,
+          discountValue: formData.discountValue,
         };
         
   
@@ -169,6 +197,9 @@ const GenerateBillManual = () => {
           <TextField fullWidth label="Phone Number" name="phoneNumber" value={formData.phoneNumber} onChange={handleInputChange} />
         </Box>
         <Box mb={2}>
+          <TextField fullWidth label="Bill Reference" name="billReference" value={formData.billReference} onChange={handleInputChange} />
+        </Box>
+        <Box mb={2}>
           <TextField
             fullWidth
             label="Customer Address"
@@ -184,7 +215,7 @@ const GenerateBillManual = () => {
           <TextField fullWidth label="Booking Time Slot" name="timeSlot" value={formData.timeSlot} onChange={handleInputChange} />
         </Box>
         <Box mb={2}>
-          <TextField fullWidth label="Discount" name="discount" type="number" placeholder='Eg : 10 (Enter the percentage of Discount)' value={formData.discount} onChange={handleInputChange} />
+          <TextField fullWidth label="Discount Percentage" name="discount" type="number" placeholder='Eg : 10 (Enter the percentage of Discount)' value={formData.discount} onChange={handleInputChange} />
         </Box>
 
         <Box mb={2}>
@@ -234,8 +265,9 @@ const GenerateBillManual = () => {
       </Button>
 
         <Box mb={2}>
-          <Typography variant="subtitle1">Subtotal: {formData.subTotal.toFixed(2)}</Typography>
-          <Typography variant="subtitle1">Total: {formData.total.toFixed(2)}</Typography>
+          <Typography variant="h6" mt={3}>Subtotal : {formData.subTotal.toFixed(2)}</Typography>
+          <Typography variant="h6">Discount ({formData.discount}%) : {formData.discountValue.toFixed(2)}</Typography>
+          <Typography variant="h5">Total : {formData.total.toFixed(2)}</Typography>
         </Box>
 
         <Box mt={3}>
@@ -244,11 +276,7 @@ const GenerateBillManual = () => {
             color="primary"
             onClick={handleGenerateBillManual}
             sx={{ marginRight: 2 }}
-            disabled={
-              formData.vehicles.some(vehicle =>
-                vehicle.services.some(service => !service.price)
-              )
-            }            
+            disabled={!isFormValid()}        
           >
             Generate Bill
           </Button>

@@ -31,10 +31,10 @@ const BillView = () => {
   };
 
   // Calculate final total with discount (if applicable)
-  const calculateFinalTotal = () => {
-    const discount = formData.discount || 0; // Default to 0 if no discount is provided
-    return formData.subTotal - discount;
-  };
+  // const calculateFinalTotal = () => {
+  //   const discount = formData.discount || 0; // Default to 0 if no discount is provided
+  //   return formData.subTotal - discount;
+  // };
 
   return (
     <Box sx={{ fontFamily: "Arial, sans-serif", textAlign: "center", p: 4 }}>
@@ -99,7 +99,7 @@ const BillView = () => {
                 )}
               </Typography>
               <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>
-                Facture n° : {formData.id}
+                Facture n° : {formData.billReference}
               </Typography>
               <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>
                 Merci de payer avant le :{' '}
@@ -188,12 +188,12 @@ const BillView = () => {
             <Typography>Sous-total :</Typography>
             <Typography>{formData.subTotal} CHF</Typography>
           </Grid>
-          {formData.discount > 0 && (
+          {formData.discountValue > 0 && (
             <>
               <Divider sx={{ my: 1 }} />
               <Grid container justifyContent="space-between">
                 <Typography>Remise :</Typography>
-                <Typography>-{formData.discount} CHF</Typography>
+                <Typography>- {formData.discountValue} CHF</Typography>
               </Grid>
             </>
           )}
@@ -203,7 +203,7 @@ const BillView = () => {
               Final Total:
             </Typography>
             <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-              {calculateFinalTotal()} CHF
+            {formData.total} CHF
             </Typography>
           </Grid>
         </Paper>

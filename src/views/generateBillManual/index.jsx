@@ -43,6 +43,7 @@ const GenerateBillManual = () => {
     id: bookingID,
     name: booking.name || '',
     phoneNumber: booking.phone || '',
+    customerReference :booking.customerReference || '',
     bookingdate: currentDate,
     billReference: booking.billReference || '',
     timeSlot: booking.timeSlot || '',
@@ -162,6 +163,7 @@ const GenerateBillManual = () => {
           paymentDueDate: formData.paymentDueDate,
           serviceDate: formData.serviceDate,
           customerAddress: formData.customerAddress,
+          customerReference: formData.customerReference,
           subTotal: formData.subTotal,
           total: formData.total,
           billReference: formData.billReference,
@@ -195,6 +197,9 @@ const GenerateBillManual = () => {
         </Box>
         <Box mb={2}>
           <TextField fullWidth label="Phone Number" name="phoneNumber" value={formData.phoneNumber} onChange={handleInputChange} />
+        </Box>
+        <Box mb={2}>
+          <TextField fullWidth label="Customer Reference" name="customerReference" value={formData.customerReference} onChange={handleInputChange} />
         </Box>
         <Box mb={2}>
           <TextField fullWidth label="Bill Reference" name="billReference" value={formData.billReference} onChange={handleInputChange} />

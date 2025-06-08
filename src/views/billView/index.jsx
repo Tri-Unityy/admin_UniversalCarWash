@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import { Box, Typography, Grid, Paper, Divider, Button, TableContainer, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
 import logo from "../../assets/images/Carwash.png";
+import qrcode from "../../assets/images/QRCODE.jpg";
 import { useLocation } from 'react-router-dom';
 import html2pdf from "html2pdf.js";
 
@@ -11,10 +12,13 @@ const BillView = () => {
 
   // Reference for the bill container
   const billRef = useRef();
-
+  const buttonRef = useRef(null);
   // Function to generate PDF
   const handleGeneratePDF = () => {
     const element = billRef.current; // Reference to the bill container
+    if (buttonRef.current) {
+      buttonRef.current.style.display = 'none';
+    }
     const options = {
       margin: 0.5,
       filename: `Bill_${formData.id}.pdf`,
@@ -22,7 +26,15 @@ const BillView = () => {
       html2canvas: { scale: 2 },
       jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
-    html2pdf().set(options).from(element).save();
+    html2pdf()
+      .set(options)
+      .from(element)
+      .save()
+      .then(() => {
+        if (buttonRef.current) {
+          buttonRef.current.style.display = 'flex';
+        }
+      });
   };
 
   // Function to print the receipt
@@ -30,16 +42,17 @@ const BillView = () => {
     window.print();
   };
 
-  // Calculate final total with discount (if applicable)
-  // const calculateFinalTotal = () => {
-  //   const discount = formData.discount || 0; // Default to 0 if no discount is provided
-  //   return formData.subTotal - discount;
-  // };
-
   return (
-    <Box sx={{ fontFamily: "Arial, sans-serif", textAlign: "center", p: 4 }}>
+    <Box sx={{ fontFamily: 'Arial, sans-serif', textAlign: 'center', p: 4 }}>
       {/* Data Preview Section */}
-      <div ref={billRef}>
+      <div
+        ref={billRef}
+
+      >
+        <div style={{
+          minHeight: '1122px',
+          pageBreakAfter: 'always'
+        }}>
         {/* Header Section */}
         <Paper
           elevation={3}
@@ -95,16 +108,16 @@ const BillView = () => {
               <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>
                 Date :{' '}
                 {new Intl.DateTimeFormat('fr-CH', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(
-                  new Date(formData.serviceDate)
+                  new Date(formData?.serviceDate)
                 )}
               </Typography>
               <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>
-                Facture n° : {formData.billReference}
+                Facture n° : {formData?.billReference}
               </Typography>
               <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>
                 Merci de payer avant le :{' '}
                 {new Intl.DateTimeFormat('fr-CH', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(
-                  new Date(formData.paymentDueDate)
+                  new Date(formData?.paymentDueDate)
                 )}
               </Typography>
             </Grid>
@@ -119,17 +132,18 @@ const BillView = () => {
           <Divider sx={{ my: 1 }} />
           <Grid container spacing={1}>
             <Grid item xs={6}>
-              <Typography variant="body2">Nom : {formData.name}</Typography>
+              <Typography variant="body2">Nom : {formData?.name}</Typography>
+              <Typography variant="body2">Customer Ref : {formData?.customerReference}</Typography>
               <Typography variant="body2">
                 Date du service :{' '}
                 {new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(
-                  new Date(formData.serviceDate)
+                  new Date(formData?.serviceDate)
                 )}
               </Typography>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="body2">Adresse : {formData.customerAddress}</Typography>
-              <Typography variant="body2">Téléphone : {formData.phoneNumber}</Typography>
+              <Typography variant="body2">Adresse : {formData?.customerAddress}</Typography>
+              <Typography variant="body2">Téléphone : {formData?.phoneNumber}</Typography>
             </Grid>
           </Grid>
         </Paper>
@@ -141,17 +155,19 @@ const BillView = () => {
               <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
                 <TableCell sx={{ fontWeight: 'bold', width: '35%' }}>Véhicule</TableCell>
                 <TableCell sx={{ fontWeight: 'bold', width: '50%' }}>Service</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 'bold', width: '15%' }}>Tarif (CHF)</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 'bold', width: '15%' }}>
+                  Tarif (CHF)
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {formData.vehicles.map((vehicle, vIndex) =>
-                vehicle.services.map((service, sIndex) => (
+              {formData?.vehicles?.map((vehicle, vIndex) =>
+                vehicle?.services?.map((service, sIndex) => (
                   <TableRow key={`${vIndex}-${sIndex}`}>
-                    <TableCell>   
-                        <Typography sx={{ fontWeight: 'medium' }}>
-                          {vehicle.vehicleType} - {vehicle.vehicleNumber}
-                        </Typography>
+                    <TableCell>
+                      <Typography sx={{ fontWeight: 'medium' }}>
+                        {vehicle.vehicleType} - {vehicle.vehicleNumber}
+                      </Typography>
                     </TableCell>
                     <TableCell>{service.name}</TableCell>
                     <TableCell align="right">{service.price}</TableCell>
@@ -162,38 +178,18 @@ const BillView = () => {
           </Table>
         </TableContainer>
 
-
-        {/* Service Details */}
-        {/* <Paper elevation={3} sx={{ mb: 3, p: 1 ,minHeight:250}}>
-          <Grid container justifyContent="space-between">
-            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-              Service
-            </Typography>
-            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-              Rate (CHF)
-            </Typography>
-          </Grid>
-          <Divider sx={{ my: 1 }} />
-          {formData.services.map((item, index) => (
-            <Grid container key={index} justifyContent="space-between" sx={{ py: 1 }}>
-              <Typography>{item.name}</Typography>
-              <Typography>{item.price}</Typography>
-            </Grid>
-          ))}
-        </Paper> */}
-
         {/* Subtotal, Discount, and Final Total */}
-        <Paper elevation={3} sx={{ p: 1, minHeight: 150 ,my: 1 }}>
+        <Paper elevation={3} sx={{ p: 1, minHeight: 150, my: 1 }}>
           <Grid container justifyContent="space-between">
             <Typography>Sous-total :</Typography>
-            <Typography>{formData.subTotal} CHF</Typography>
+            <Typography>{formData?.subTotal} CHF</Typography>
           </Grid>
-          {formData.discountValue > 0 && (
+          {formData?.discountValue > 0 && (
             <>
               <Divider sx={{ my: 1 }} />
               <Grid container justifyContent="space-between">
                 <Typography>Remise :</Typography>
-                <Typography>- {formData.discountValue} CHF</Typography>
+                <Typography>- {formData?.discountValue} CHF</Typography>
               </Grid>
             </>
           )}
@@ -203,7 +199,7 @@ const BillView = () => {
               Final Total:
             </Typography>
             <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-            {formData.total} CHF
+              {formData?.total} CHF
             </Typography>
           </Grid>
         </Paper>
@@ -237,21 +233,56 @@ const BillView = () => {
             </Typography>
           </Box>
         </Paper>
+        </div>
+
+        {/* Buttons for PDF and Print */}
+        <Box
+          ref={buttonRef}
+          sx={{
+            mt: 3,
+            display: 'flex',
+            justifyContent: 'center',
+            gap: 2,
+            '@media print': {
+              display: 'none'
+            }
+          }}
+        >
+          <Button variant="contained" color="secondary" onClick={() => window.history.back()}>
+            Retour
+          </Button>
+          <Button variant="contained" color="primary" onClick={handleGeneratePDF}>
+            Convertir en PDF
+          </Button>
+          <Button variant="contained" color="secondary" onClick={handlePrint}>
+            Imprimer le reçu
+          </Button>
+        </Box>
+        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%', mt: 4, pageBreakBefore: 'always'}}>
+        {/* Left side: QR Code */}
+        <Box sx={{ width: '50%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+          <img src={qrcode} alt="QRCODE" width={300} />
+        </Box>
+
+        {/* Right side: Payment Details */}
+        <Box sx={{ width: '50%', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+          <Typography variant="body2" sx={{ color: 'black', fontSize: '1rem' }}>
+            CH55 3000 5279 3451 7401 A
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'black', fontSize: '1rem' }}>
+            Universal Car wash Sarl
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'black', fontSize: '1rem' }}>
+            Route de Saint-Geaorges 77
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'black', fontSize: '1rem' }}>
+            1213 Petit-Lancy
+          </Typography>
+        </Box>
+      </Box>
       </div>
 
-      {/* Buttons for PDF and Print */}
-      <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', gap: 2 }}>
-        <Button variant="contained" color="secondary" onClick={() => window.history.back()}>
-          Retour
-        </Button>
-        <Button variant="contained" color="primary" onClick={handleGeneratePDF}>
-          Convertir en PDF
-        </Button>
-        <Button variant="contained" color="secondary" onClick={handlePrint}>
-          Imprimer le reçu
-        </Button>
 
-      </Box>
     </Box>
   );
 };

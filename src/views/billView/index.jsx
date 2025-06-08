@@ -265,20 +265,36 @@ const BillView = () => {
         </Box>
 
         {/* Right side: Payment Details */}
-        <Box sx={{ width: '50%', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-          <Typography variant="body2" sx={{ color: 'black', fontSize: '1rem' }}>
-            CH55 3000 5279 3451 7401 A
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'black', fontSize: '1rem' }}>
-            Universal Car wash Sarl
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'black', fontSize: '1rem' }}>
-            Route de Saint-Geaorges 77
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'black', fontSize: '1rem' }}>
-            1213 Petit-Lancy
-          </Typography>
-        </Box>
+      <Box sx={{ width: '50%', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+        <Typography variant="body2" sx={{ color: 'black', fontSize: '1.4rem' }}>
+          Compte/Payable à
+        </Typography>
+        <Typography variant="body2" sx={{ color: 'black', fontSize: '1rem' }}>
+          CH55 3000 5279 3451 7401 A
+        </Typography>
+        <Typography variant="body2" sx={{ color: 'black', fontSize: '1rem' }}>
+          Universal Car Wash Sàrl
+        </Typography>
+        <Typography variant="body2" sx={{ color: 'black', fontSize: '1rem' }}>
+          Route de Saint-Georges 77
+        </Typography>
+        <Typography variant="body2" sx={{ color: 'black', fontSize: '1rem' }}>
+          1213 Petit-Lancy
+        </Typography>
+        <Typography variant="body2" sx={{ color: 'black', fontSize: '1.4rem', marginTop: '5px' }}>
+          Référence
+        </Typography>
+        <Typography variant="body2" sx={{ color: 'black', fontSize: '1rem' }}>
+          00 00000 00000 00002 30828 00017
+        </Typography>
+        <Typography variant="body2" sx={{ color: 'black', fontSize: '1.4rem', marginTop: '5px' }}>
+          Informations supplémentaires
+        </Typography>
+        <Typography variant="body2" sx={{ color: 'black', fontSize: '1rem' }}>
+          Numéro 23082800017
+        </Typography>
+      </Box>
+
       </Box>
       </div>
 

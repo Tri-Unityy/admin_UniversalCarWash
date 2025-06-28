@@ -185,7 +185,7 @@ const BillView = () => {
                   <Stack spacing={0.2}>
                     <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>Nom</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>{formData?.name}</Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>Référence client</Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>N° Client </Typography>
                     <Typography variant="body2">{formData?.customerReference || 'N/A'}</Typography>
                     <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>Date du service</Typography>
                     <Typography variant="body2">{new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(formData?.serviceDate))}</Typography>
@@ -208,8 +208,8 @@ const BillView = () => {
                   <TableHead>
                     <TableRow sx={{ bgcolor: 'primary.main' }}>
                       <TableCell sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '0.7rem', sm: '0.8rem' }, py: 0.5 }}>Véhicule</TableCell>
-                      <TableCell sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '0.7rem', sm: '0.8rem' }, py: 0.5 }}>Service</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '0.7rem', sm: '0.8rem' }, py: 0.5 }}>Tarif (CHF)</TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '0.7rem', sm: '0.8rem' }, py: 0.5 }}>Désignation</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '0.7rem', sm: '0.8rem' }, py: 0.5 }}>Montant HT</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -224,7 +224,7 @@ const BillView = () => {
                             <Typography variant="body2" sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>{service.name}</Typography>
                           </TableCell>
                           <TableCell align="right" sx={{ py: 0.3 }}>
-                            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>{service.price} CHF</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>{service.price} .-CHF</Typography>
                           </TableCell>
                         </TableRow>
                       ))
@@ -243,12 +243,12 @@ const BillView = () => {
                 {formData?.discountValue > 0 && (
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.3, borderBottom: '1px solid', borderColor: 'divider' }}>
                     <Typography variant="body2" color="error.main">Remise:</Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }} color="error.main">-{formData?.discountValue} CHF</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }} color="error.main">-{formData?.discountValue} .-CHF</Typography>
                   </Box>
                 )}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.7, bgcolor: 'primary.main', color: 'white', borderRadius: 1, px: 1.5 }}>
-                  <Typography variant="body1" sx={{ fontWeight: 700 }}>Total Final:</Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>{formData?.total} CHF</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 700 }}>Net à Payer:</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>{formData?.total} .-CHF</Typography>
                 </Box>
               </Box>
             </Grid>

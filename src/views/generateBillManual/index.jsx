@@ -13,7 +13,8 @@ import {
   Divider, 
   IconButton,
   Chip,
-  Stack
+  Stack,
+  CircularProgress
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, Receipt as ReceiptIcon } from '@mui/icons-material';
 import MainCard from 'ui-component/cards/MainCard';
@@ -578,7 +579,9 @@ const GenerateBillManual = () => {
             size="large"
             onClick={handleGenerateBillManual}
             sx={{ marginRight: 2 }}
-            disabled={formData.services.some((service) => !service.price)}
+            disabled={formData.vehicles.some(vehicle => 
+              vehicle.services.some(service => !service.name || !service.price)
+            )}
           >
             {loading ? <CircularProgress size={24} color="inherit" /> : 'Generate Bill'}
           </Button>

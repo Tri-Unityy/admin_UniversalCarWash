@@ -23,89 +23,89 @@ const GenerateBillManual = Loadable(lazy(() => import('views/generateBillManual'
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
-  path: '/',
-  element: <MainLayout />,
-  children: [
-    {
-      path: '/manual',
-      // element: <Bookings />
-      element: <GenerateBillManual />
-    },
-    {
-      path: 'dashboard',
-      children: [
+    path: '/',
+    element: <MainLayout />,
+    children: [
         {
-          path: 'default',
-          element: <DashboardDefault />
+            path: '/manual',
+            // element: <Bookings />
+            element: <GenerateBillManual />
+        },
+        {
+            path: 'dashboard',
+            children: [
+                {
+                    path: 'default',
+                    element: <DashboardDefault />
+                }
+            ]
+        },
+        // {
+        //   path: 'utils',
+        //   children: [
+        //     {
+        //       path: 'util-typography',
+        //       element: <UtilsTypography />
+        //     }
+        //   ]
+        // },
+        // {
+        //   path: 'utils',
+        //   children: [
+        //     {
+        //       path: 'util-color',
+        //       element: <UtilsColor />
+        //     }
+        //   ]
+        // },
+        // {
+        //   path: 'utils',
+        //   children: [
+        //     {
+        //       path: 'util-shadow',
+        //       element: <UtilsShadow />
+        //     }
+        //   ]
+        // },
+        // {
+        //   path: 'icons',
+        //   children: [
+        //     {
+        //       path: 'tabler-icons',
+        //       element: <UtilsTablerIcons />
+        //     }
+        //   ]
+        // },
+        // {
+        //   path: 'icons',
+        //   children: [
+        //     {
+        //       path: 'material-icons',
+        //       element: <UtilsMaterialIcons />
+        //     }
+        //   ]
+        // },
+        {
+            path: 'billCreation-page',
+            element: <BillCreation />
+        },
+        // {
+        //   path: '/bookings',
+        //   element: <Bookings />
+        // },
+        {
+            path: 'bookingDetails/:id',
+            element: <BookingDetails />
+        },
+        {
+            path: 'generateBill/:id',
+            element: <GenerateBill />
+        },
+        {
+            path: '/manual',
+            element: <GenerateBillManual />
         }
-      ]
-    },
-    // {
-    //   path: 'utils',
-    //   children: [
-    //     {
-    //       path: 'util-typography',
-    //       element: <UtilsTypography />
-    //     }
-    //   ]
-    // },
-    // {
-    //   path: 'utils',
-    //   children: [
-    //     {
-    //       path: 'util-color',
-    //       element: <UtilsColor />
-    //     }
-    //   ]
-    // },
-    // {
-    //   path: 'utils',
-    //   children: [
-    //     {
-    //       path: 'util-shadow',
-    //       element: <UtilsShadow />
-    //     }
-    //   ]
-    // },
-    // {
-    //   path: 'icons',
-    //   children: [
-    //     {
-    //       path: 'tabler-icons',
-    //       element: <UtilsTablerIcons />
-    //     }
-    //   ]
-    // },
-    // {
-    //   path: 'icons',
-    //   children: [
-    //     {
-    //       path: 'material-icons',
-    //       element: <UtilsMaterialIcons />
-    //     }
-    //   ]
-    // },
-    {
-      path: 'billCreation-page',
-      element: <BillCreation />
-    },
-    // {
-    //   path: '/bookings',
-    //   element: <Bookings />
-    // },
-    {
-      path: 'bookingDetails/:id',
-      element: <BookingDetails />
-    },
-    {
-      path: 'generateBill/:id',
-      element: <GenerateBill />
-    },
-    {
-      path: '/manual',
-      element: <GenerateBillManual />
-    }
-  ]
+    ]
 };
 
 export default MainRoutes;

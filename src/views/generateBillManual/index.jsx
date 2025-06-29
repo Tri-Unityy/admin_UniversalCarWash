@@ -141,14 +141,16 @@ const GenerateBillManual = () => {
         setFormData((prev) => ({ ...prev, vehicles: updatedVehicles }));
     };
 
-    const handleGenerateBillManual = async () => {
-        try {
-            const db = getFirestore();
-
-            if (!isFormValid()) {
-                alert('Please fill in all required fields correctly.');
-                return;
-            }
+      const handleGenerateBillManual = async () => {
+    setLoading(true);
+    try {
+      const db = getFirestore();
+   
+      if (!isFormValid()) {
+        alert('Please fill in all required fields correctly.');
+        setLoading(false);
+        return;
+      }
 
             const bookingDocRef = doc(db, 'universal-carwash-manual-bills', bookingID);
             const bookingDocSnapshot = await getDoc(bookingDocRef);

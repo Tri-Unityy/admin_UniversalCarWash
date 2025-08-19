@@ -46,7 +46,7 @@ const BillView = () => {
       margin: 0.3,
       filename: `Bill_${formData.id}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
+      html2canvas: { scale: 2, windowWidth: 1024 },
       jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
     html2pdf()

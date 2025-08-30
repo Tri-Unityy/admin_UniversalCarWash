@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
   },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#1976d2',
+    backgroundColor: '#FF0000',
     padding: '2mm',
     color: 'white',
     fontSize: 9,
@@ -62,9 +62,10 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e0e0e0',
     fontSize: 9
   },
-  col1: { width: '30%' },
-  col2: { width: '50%' },
-  col3: { width: '20%', textAlign: 'right' },
+  col1: { width: '20%' },
+  col2: { width: '30%' },
+  col3: { width: '35%' },
+  col4: { width: '15%', textAlign: 'right' },
   summary: {
     marginTop: '5mm',
     borderTopWidth: 1,
@@ -72,7 +73,7 @@ const styles = StyleSheet.create({
     paddingTop: '2mm'
   },
   total: {
-    backgroundColor: '#1976d2',
+    backgroundColor: '#FF0000',
     padding: '3mm',
     color: 'white',
     marginTop: '3mm',
@@ -105,12 +106,26 @@ const styles = StyleSheet.create({
 });
 
 const BillPDF = ({ formData }) => {
-  const formatDate = (dateString) => {
+  const toSafeDate = (value) => {
+    if (!value) return null;
+    try {
+      if (value?.toDate) return value.toDate();
+      if (typeof value === 'number') return new Date(value);
+      const parsed = new Date(value);
+      return isNaN(parsed.getTime()) ? null : parsed;
+    } catch (_) {
+      return null;
+    }
+  };
+
+  const formatDate = (value) => {
+    const d = toSafeDate(value);
+    if (!d) return '—';
     return new Intl.DateTimeFormat('fr-CH', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
-    }).format(new Date(dateString));
+    }).format(d);
   };
 
   // Split services into chunks of 6 for pagination
@@ -176,18 +191,20 @@ const BillPDF = ({ formData }) => {
           {/* Services Table */}
           <View style={styles.servicesTable}>
             <View style={styles.tableHeader}>
-              <Text style={styles.col1}>Véhicule</Text>
-              <Text style={styles.col2}>Désignation</Text>
-              <Text style={styles.col3}>Montant HT</Text>
+              <Text style={styles.col1}>Date du service</Text>
+              <Text style={styles.col2}>Véhicule</Text>
+              <Text style={styles.col3}>Désignation</Text>
+              <Text style={styles.col4}>Montant HT</Text>
             </View>
             {chunk.map((item, index) => (
               <View key={index} style={[styles.tableRow, index % 2 === 0 && { backgroundColor: '#f5f5f5' }]}>
-                <View style={styles.col1}>
+                <Text style={styles.col1}>{formatDate(item?.service?.serviceDate || formData?.serviceDate)}</Text>
+                <View style={styles.col2}>
                   <Text style={{ fontWeight: 'bold' }}>{item.vehicle.vehicleType}</Text>
                   <Text style={{ fontSize: 8, color: '#666' }}>{item.vehicle.vehicleNumber}</Text>
                 </View>
-                <Text style={styles.col2}>{item.service.name}</Text>
-                <Text style={styles.col3}>{item.service.price} .-CHF</Text>
+                <Text style={styles.col3}>{item.service.name}</Text>
+                <Text style={styles.col4}>{Number(item.service.price).toFixed(2)} .-CHF</Text>
               </View>
             ))}
           </View>
@@ -197,18 +214,18 @@ const BillPDF = ({ formData }) => {
             <View style={styles.summary}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: '2mm' }}>
                 <Text>Sous-total:</Text>
-                <Text>{formData?.subTotal} CHF</Text>
+                <Text>{formData?.subTotal.toFixed(2)} .-CHF</Text>
               </View>
               {formData?.discountValue > 0 && (
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: '2mm' }}>
                   <Text style={{ color: '#f44336' }}>Remise:</Text>
-                  <Text style={{ color: '#f44336' }}>-{formData?.discountValue} .-CHF</Text>
+                  <Text style={{ color: '#f44336' }}>-{formData?.discountValue.toFixed(2)} .-CHF</Text>
                 </View>
               )}
               <View style={styles.total}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   <Text style={{ fontWeight: 'bold' }}>Net à Payer:</Text>
-                  <Text style={{ fontWeight: 'bold' }}>{formData?.total} .-CHF</Text>
+                  <Text style={{ fontWeight: 'bold' }}>{formData?.total.toFixed(2)} .-CHF</Text>
                 </View>
               </View>
             </View>

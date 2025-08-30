@@ -54,6 +54,24 @@ const BillView = () => {
 
   const serviceChunks = chunkServices(formData?.vehicles);
 
+  const toSafeDate = (value) => {
+    if (!value) return null;
+    try {
+      if (value?.toDate) return value.toDate();
+      if (typeof value === 'number') return new Date(value);
+      const parsed = new Date(value);
+      return isNaN(parsed.getTime()) ? null : parsed;
+    } catch (_) {
+      return null;
+    }
+  };
+
+  const formatDate = (value) => {
+    const d = toSafeDate(value);
+    if (!d) return '—';
+    return new Intl.DateTimeFormat('fr-CH', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(d);
+  };
+
   const handlePrint = () => {
     window.print();
   };
@@ -329,14 +347,6 @@ const BillView = () => {
               </Button>
             )}
           </PDFDownloadLink>
-          <Button
-            variant="contained"
-            startIcon={<PrintIcon />}
-            onClick={handlePrint}
-            sx={{ borderRadius: 2, bgcolor: 'success.main', '&:hover': { bgcolor: 'success.dark' }, px: { xs: 2, sm: 3 } }}
-          >
-            Imprimer
-          </Button>
         </Box>
 
         {/* Paginated Bill Content */}
@@ -380,16 +390,10 @@ const BillView = () => {
                   </Box>
                   <Stack spacing={0.2} sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
                     <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
-                      Date:{' '}
-                      {new Intl.DateTimeFormat('fr-CH', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(
-                        new Date(formData?.serviceDate)
-                      )}
+                      Date: {formatDate(formData?.serviceDate)}
                     </Typography>
                     <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
-                      Échéance:{' '}
-                      {new Intl.DateTimeFormat('fr-CH', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(
-                        new Date(formData?.paymentDueDate)
-                      )}
+                      Échéance: {formatDate(formData?.paymentDueDate)}
                     </Typography>
                   </Stack>
                 </Box>
@@ -419,18 +423,6 @@ const BillView = () => {
                       </Typography>
                       <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
                         {formData?.customerReference || 'N/A'}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ fontWeight: 500, fontSize: { xs: '0.7rem', sm: '0.8rem' } }}
-                      >
-                        Date du service
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
-                        {new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(
-                          new Date(formData?.serviceDate)
-                        )}
                       </Typography>
                     </Stack>
                   </Grid>
@@ -467,15 +459,24 @@ const BillView = () => {
                   <Table size="small">
                     <TableHead>
                       <TableRow sx={{ bgcolor: 'primary.main' }}>
-                        <TableCell sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '0.7rem', sm: '0.8rem' }, py: 0.5 }}>
+                        <TableCell
+                          sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '0.7rem', sm: '0.8rem' }, py: 0.5, width: '20%' }}
+                        >
+                          Date du service
+                        </TableCell>
+                        <TableCell
+                          sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '0.7rem', sm: '0.8rem' }, py: 0.5, width: '30%' }}
+                        >
                           Véhicule
                         </TableCell>
-                        <TableCell sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '0.7rem', sm: '0.8rem' }, py: 0.5 }}>
+                        <TableCell
+                          sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '0.7rem', sm: '0.8rem' }, py: 0.5, width: '35%' }}
+                        >
                           Désignation
                         </TableCell>
                         <TableCell
                           align="right"
-                          sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '0.7rem', sm: '0.8rem' }, py: 0.5 }}
+                          sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '0.7rem', sm: '0.8rem' }, py: 0.5, width: '15%' }}
                         >
                           Montant HT
                         </TableCell>
@@ -484,6 +485,11 @@ const BillView = () => {
                     <TableBody>
                       {serviceChunk.map((item, index) => (
                         <TableRow key={index} sx={{ '&:nth-of-type(odd)': { bgcolor: 'grey.50' } }}>
+                          <TableCell sx={{ py: 0.3 }}>
+                            <Typography variant="body2" sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
+                              {formatDate(item?.service?.serviceDate || formData?.serviceDate)}
+                            </Typography>
+                          </TableCell>
                           <TableCell sx={{ py: 0.3 }}>
                             <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
                               {item.vehicle.vehicleType}
@@ -499,7 +505,7 @@ const BillView = () => {
                           </TableCell>
                           <TableCell align="right" sx={{ py: 0.3 }}>
                             <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
-                              {item.service.price} .-CHF
+                              {item.service.price.toFixed(2)} .-CHF
                             </Typography>
                           </TableCell>
                         </TableRow>

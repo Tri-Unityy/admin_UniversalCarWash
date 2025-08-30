@@ -16,8 +16,7 @@ import {
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, Receipt as ReceiptIcon } from '@mui/icons-material';
 import MainCard from 'ui-component/cards/MainCard';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from '../../utils/firebase.config';
+import { saveManualBill } from '../../api/bills';
 
 const GenerateBillManual = () => {
   const navigate = useNavigate();
@@ -132,7 +131,7 @@ const GenerateBillManual = () => {
 
   const handleAddServiceToVehicle = (vIndex) => {
     const updatedVehicles = [...formData.vehicles];
-    updatedVehicles[vIndex].services.push({ name: '', price: 0 });
+    updatedVehicles[vIndex].services.push({ name: '', price: 0, serviceDate: currentDate });
     setFormData((prev) => ({ ...prev, vehicles: updatedVehicles }));
   };
 
@@ -150,34 +149,25 @@ const GenerateBillManual = () => {
         setLoading(false);
         return;
       }
+      const saveData = {
+        id: bookingID,
+        name: formData.name,
+        phoneNumber: formData.phoneNumber,
+        bookingDate: formData.bookingdate,
+        discount: formData.discount,
+        vehicles: formData.vehicles,
+        paymentDueDate: formData.paymentDueDate,
+        serviceDate: formData.serviceDate,
+        customerAddress: formData.customerAddress,
+        customerReference: formData.customerReference,
+        subTotal: formData.subTotal,
+        total: formData.total,
+        billReference: formData.billReference,
+        timeSlot: formData.timeSlot,
+        discountValue: formData.discountValue
+      };
 
-      const bookingDocRef = doc(db, 'universal-carwash-manual-bills', bookingID);
-      const bookingDocSnapshot = await getDoc(bookingDocRef);
-
-      if (!bookingDocSnapshot.exists()) {
-        const saveData = {
-          id: bookingID,
-          name: formData.name,
-          phoneNumber: formData.phoneNumber,
-          bookingDate: formData.bookingdate,
-          discount: formData.discount,
-          vehicles: formData.vehicles,
-          paymentDueDate: formData.paymentDueDate,
-          serviceDate: formData.serviceDate,
-          customerAddress: formData.customerAddress,
-          customerReference: formData.customerReference,
-          subTotal: formData.subTotal,
-          total: formData.total,
-          billReference: formData.billReference,
-          timeSlot: formData.timeSlot,
-          discountValue: formData.discountValue
-        };
-
-        await setDoc(bookingDocRef, saveData);
-        console.log('New document created in Firestore:', saveData);
-      } else {
-        console.log('Document already exists in Firestore.');
-      }
+      await saveManualBill(bookingID, saveData);
 
       navigate('/generatedBill', { state: { ...formData, id: bookingID } });
     } catch (error) {
@@ -474,15 +464,26 @@ const GenerateBillManual = () => {
                             flexDirection: { xs: 'column', sm: 'row' }
                           }}
                         >
-                          <TextField
-                            label="Service Name"
-                            value={service.name}
-                            onChange={(e) => handleVehicleServiceChange(vIndex, sIndex, 'name', e.target.value)}
-                            variant="outlined"
-                            size="small"
-                            sx={{ flex: { xs: 'auto', sm: 2 } }}
-                            fullWidth
-                          />
+                          <Box sx={{ display: 'flex', gap: 1, flex: { xs: 'auto', sm: 2 } }}>
+                            <TextField
+                              label="Service Name"
+                              value={service.name}
+                              onChange={(e) => handleVehicleServiceChange(vIndex, sIndex, 'name', e.target.value)}
+                              variant="outlined"
+                              size="small"
+                              fullWidth
+                            />
+                            <TextField
+                              label="Service Date"
+                              type="date"
+                              value={service.serviceDate || currentDate}
+                              onChange={(e) => handleVehicleServiceChange(vIndex, sIndex, 'serviceDate', e.target.value)}
+                              variant="outlined"
+                              size="small"
+                              InputLabelProps={{ shrink: true }}
+                              sx={{ width: '40%' }}
+                            />
+                          </Box>
                           <Box
                             sx={{
                               display: 'flex',

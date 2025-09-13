@@ -1,4 +1,5 @@
-import React, { useRef } from 'react';
+// billview.js
+import React, { useRef, useState } from 'react';
 import {
   Box,
   Typography,
@@ -16,7 +17,9 @@ import {
   CardContent,
   Stack,
   Chip,
-  Container
+  Container,
+  Checkbox,
+  FormControlLabel
 } from '@mui/material';
 import { PictureAsPdf as PdfIcon, Print as PrintIcon, ArrowBack as BackIcon, Receipt as ReceiptIcon } from '@mui/icons-material';
 import logo from '../../assets/images/Carwash.png';
@@ -25,6 +28,8 @@ import { useLocation } from 'react-router-dom';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import BillPDF from './BillPDF';
 
+const BRAND_RED = '#B00020';
+
 const BillView = () => {
   const location = useLocation();
   const formData = location.state;
@@ -32,6 +37,9 @@ const BillView = () => {
 
   const billRef = useRef();
   const buttonRef = useRef(null);
+
+  // NEW: toggle to include QR in the downloaded PDF
+  const [showQR, setShowQR] = useState(false);
 
   // Chunk services into pages of 6 services each
   const chunkServices = (vehicles, servicesPerPage = 6) => {
@@ -100,36 +108,47 @@ const BillView = () => {
           Universal car wash sàrl
         </Typography>
         <Typography variant="caption" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, color: 'white', opacity: 0.9 }}>
-          Rte de Saint-Georges 77, 1213 Petit-Lancy, Geneva
+          Rte de Saint-Georges 77, 1213 Petit-Lancy, GE
         </Typography>
       </Box>
     </Box>
   );
 
-  // Reusable Footer Component
-  const BillFooter = () => (
-    <Box className="print-bg" sx={{ bgcolor: 'black', color: 'white', p: { xs: 1, sm: 1.5 }, mt: 1, borderRadius: 1 }}>
+  // Reusable Footer Component (with page numbers)
+  const BillFooter = ({ pageNumber, totalPages }) => (
+    <Box className="print-bg bill-footer" sx={{ bgcolor: 'black', color: 'white', p: { xs: 1, sm: 1.5 }, mt: 1, borderRadius: 1 }}>
       <Box sx={{ textAlign: 'center', mb: 0.5 }}>
         <Typography variant="subtitle1" sx={{ color: '#FF2400', fontWeight: 700, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
           Merci pour votre confiance !
         </Typography>
       </Box>
       <Divider sx={{ my: 0.5, bgcolor: 'grey.600' }} />
+
+      {/* 3 equal columns: left (email), center (phone), right (page) */}
       <Box
         sx={{
           display: 'flex',
-          justifyContent: 'space-between',
-          flexDirection: { xs: 'column', sm: 'row' },
-          gap: { xs: 0.5, sm: 0 },
-          textAlign: { xs: 'center', sm: 'left' }
+          alignItems: 'center',
+          gap: { xs: 0.5, sm: 0 }
         }}
       >
-        <Typography variant="caption" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, color: 'white', opacity: 0.9 }}>
-          info@theuniversalcarwash.ch
-        </Typography>
-        <Typography variant="caption" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, color: 'white', opacity: 0.9 }}>
-          +41 793270036
-        </Typography>
+        <Box sx={{ flex: 1, textAlign: 'left' }}>
+          <Typography variant="caption" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, color: 'white', opacity: 0.9 }}>
+            info@theuniversalcarwash.ch
+          </Typography>
+        </Box>
+
+        <Box sx={{ flex: 1, textAlign: 'center' }}>
+          <Typography variant="caption" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, color: 'white', opacity: 0.9 }}>
+            +41 793270036
+          </Typography>
+        </Box>
+
+        <Box sx={{ flex: 1, textAlign: 'right' }}>
+          <Typography variant="caption" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, color: 'white', opacity: 0.9 }}>
+            Page {pageNumber} / {totalPages}
+          </Typography>
+        </Box>
       </Box>
     </Box>
   );
@@ -137,6 +156,7 @@ const BillView = () => {
   // Reusable Payment Information Component
   const PaymentInformation = () => (
     <Box
+      className="payment-section"
       sx={{
         display: 'flex',
         flexDirection: 'row',
@@ -335,7 +355,17 @@ const BillView = () => {
           >
             Retour
           </Button>
-          <PDFDownloadLink document={<BillPDF formData={formData} />} fileName={`Bill_${formData?.billReference || 'invoice'}.pdf`}>
+
+          {/* NEW: checkbox to include QR in the downloaded PDF */}
+          <FormControlLabel
+            control={<Checkbox checked={showQR} onChange={(e) => setShowQR(e.target.checked)} color="primary" />}
+            label="Inclure le QR dans le PDF"
+          />
+
+          <PDFDownloadLink
+            document={<BillPDF formData={formData} showQR={showQR} />}
+            fileName={`Bill_${formData?.billReference || 'invoice'}.pdf`}
+          >
             {({ blob, url, loading, error }) => (
               <Button
                 variant="contained"
@@ -455,64 +485,66 @@ const BillView = () => {
 
               {/* Services Table for this page */}
               <Box className="services-section" sx={{ flexGrow: 1 }}>
-                <TableContainer>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow sx={{ bgcolor: 'primary.main' }}>
-                        <TableCell
-                          sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '0.7rem', sm: '0.8rem' }, py: 0.5, width: '20%' }}
-                        >
-                          Date du service
-                        </TableCell>
-                        <TableCell
-                          sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '0.7rem', sm: '0.8rem' }, py: 0.5, width: '30%' }}
-                        >
-                          Véhicule
-                        </TableCell>
-                        <TableCell
-                          sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '0.7rem', sm: '0.8rem' }, py: 0.5, width: '35%' }}
-                        >
-                          Désignation
-                        </TableCell>
-                        <TableCell
-                          align="right"
-                          sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '0.7rem', sm: '0.8rem' }, py: 0.5, width: '15%' }}
-                        >
-                          Montant HT
-                        </TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {serviceChunk.map((item, index) => (
-                        <TableRow key={index} sx={{ '&:nth-of-type(odd)': { bgcolor: 'grey.50' } }}>
-                          <TableCell sx={{ py: 0.3 }}>
-                            <Typography variant="body2" sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
-                              {formatDate(item?.service?.serviceDate || formData?.serviceDate)}
-                            </Typography>
+                <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'hidden' }}>
+                  <TableContainer>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow sx={{ bgcolor: BRAND_RED }}>
+                          <TableCell
+                            sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '0.7rem', sm: '0.8rem' }, py: 0.5, width: '20%' }}
+                          >
+                            Date du service
                           </TableCell>
-                          <TableCell sx={{ py: 0.3 }}>
-                            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
-                              {item.vehicle.vehicleType}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem' } }}>
-                              {item.vehicle.vehicleNumber}
-                            </Typography>
+                          <TableCell
+                            sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '0.7rem', sm: '0.8rem' }, py: 0.5, width: '30%' }}
+                          >
+                            Véhicule
                           </TableCell>
-                          <TableCell sx={{ py: 0.3 }}>
-                            <Typography variant="body2" sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
-                              {item.service.name}
-                            </Typography>
+                          <TableCell
+                            sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '0.7rem', sm: '0.8rem' }, py: 0.5, width: '35%' }}
+                          >
+                            Désignation
                           </TableCell>
-                          <TableCell align="right" sx={{ py: 0.3 }}>
-                            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
-                              {item.service.price.toFixed(2)} .-CHF
-                            </Typography>
+                          <TableCell
+                            align="right"
+                            sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '0.7rem', sm: '0.8rem' }, py: 0.5, width: '15%' }}
+                          >
+                            Montant HT
                           </TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                      </TableHead>
+                      <TableBody>
+                        {serviceChunk.map((item, index) => (
+                          <TableRow key={index} sx={{ '&:nth-of-type(odd)': { bgcolor: 'grey.50' } }}>
+                            <TableCell sx={{ py: 0.3 }}>
+                              <Typography variant="body2" sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
+                                {formatDate(item?.service?.serviceDate || formData?.serviceDate)}
+                              </Typography>
+                            </TableCell>
+                            <TableCell sx={{ py: 0.3 }}>
+                              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
+                                {item.vehicle.vehicleType}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem' } }}>
+                                {item.vehicle.vehicleNumber}
+                              </Typography>
+                            </TableCell>
+                            <TableCell sx={{ py: 0.3 }}>
+                              <Typography variant="body2" sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
+                                {item.service.name}
+                              </Typography>
+                            </TableCell>
+                            <TableCell align="right" sx={{ py: 0.3 }}>
+                              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
+                                {item.service.price.toFixed(2)} .-CHF
+                              </Typography>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Box>
               </Box>
 
               {/* Bill Summary and Payment Information */}
@@ -533,7 +565,7 @@ const BillView = () => {
                         Sous-total:
                       </Typography>
                       <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
-                        {formData?.subTotal} CHF
+                        {formData?.subTotal} .-CHF
                       </Typography>
                     </Box>
                     {formData?.discountValue > 0 && (
@@ -559,7 +591,7 @@ const BillView = () => {
                         display: 'flex',
                         justifyContent: 'space-between',
                         py: 0.7,
-                        bgcolor: 'primary.main',
+                        bgcolor: BRAND_RED,
                         color: 'white',
                         borderRadius: 1,
                         px: 1.5
@@ -568,16 +600,18 @@ const BillView = () => {
                       <Typography variant="body1" sx={{ fontWeight: 700, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
                         Net à Payer:
                       </Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
                         {formData?.total} .-CHF
                       </Typography>
                     </Box>
                   </Box>
                 )}
 
-                {/* Show Payment Information and Footer on all pages */}
-                <PaymentInformation />
-                <BillFooter />
+                {/* Show Payment Information only on the last page (matches previous UI behavior) */}
+                {pageIndex === serviceChunks.length - 1 && <PaymentInformation />}
+
+                {/* Footer on all pages with page numbers */}
+                <BillFooter pageNumber={pageIndex + 1} totalPages={serviceChunks.length} />
               </Box>
             </Paper>
           ))}

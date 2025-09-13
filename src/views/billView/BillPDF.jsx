@@ -14,14 +14,22 @@ Font.register({
   ]
 });
 
+const BRAND_RED = '#B00020'; // darker, print-friendly red
+const PURE_BLACK = '#000000';
+const PURE_WHITE = '#FFFFFF';
+const LIGHT_GREY = '#F2F2F2';
+const BORDER_GREY = '#D9D9D9';
+
 const styles = StyleSheet.create({
   page: {
     padding: '10mm',
-    fontFamily: 'Roboto'
+    paddingBottom: '30mm',
+    fontFamily: 'Roboto',
+    color: PURE_BLACK
   },
   header: {
     flexDirection: 'row',
-    backgroundColor: '#000000',
+    backgroundColor: PURE_BLACK,
     padding: '4mm',
     marginBottom: '5mm',
     borderRadius: 4
@@ -31,7 +39,7 @@ const styles = StyleSheet.create({
     height: 'auto'
   },
   headerText: {
-    color: 'white',
+    color: PURE_WHITE,
     flex: 1,
     textAlign: 'right',
     fontSize: 10
@@ -47,19 +55,26 @@ const styles = StyleSheet.create({
   servicesTable: {
     marginBottom: '5mm'
   },
+  tableOuter: {
+    borderWidth: 1,
+    borderColor: BORDER_GREY,
+    borderRadius: 3
+  },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#FF0000',
+    backgroundColor: BRAND_RED,
     padding: '2mm',
-    color: 'white',
+    color: PURE_WHITE,
     fontSize: 9,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    borderTopLeftRadius: 3,
+    borderTopRightRadius: 3
   },
   tableRow: {
     flexDirection: 'row',
     padding: '2mm',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: BORDER_GREY,
     fontSize: 9
   },
   col1: { width: '20%' },
@@ -69,28 +84,29 @@ const styles = StyleSheet.create({
   summary: {
     marginTop: '5mm',
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+    borderTopColor: BORDER_GREY,
     paddingTop: '2mm'
   },
   total: {
-    backgroundColor: '#FF0000',
-    padding: '3mm',
-    color: 'white',
-    marginTop: '3mm',
-    borderRadius: 2
+    backgroundColor: BRAND_RED,
+    paddingVertical: '1.5mm',
+    paddingHorizontal: '3mm',
+    marginTop: '2mm',
+    borderRadius: 2,
+    color: PURE_WHITE
   },
   paymentSection: {
     flexDirection: 'row',
     marginTop: '5mm',
-    gap: '5mm',
-    marginBottom: '5mm'
+    marginBottom: 0 // sits just above footer
   },
   qrCode: {
-    width: '35%', // Match the web view ratio
-    height: 'auto'
+    width: '35%',
+    height: 'auto',
+    marginRight: '5mm'
   },
   paymentDetails: {
-    width: '65%', // Match the web view ratio
+    width: '65%',
     fontSize: 8
   },
   footer: {
@@ -98,14 +114,14 @@ const styles = StyleSheet.create({
     bottom: '10mm',
     left: '10mm',
     right: '10mm',
-    backgroundColor: '#000000',
+    backgroundColor: PURE_BLACK,
     padding: '4mm',
-    color: 'white',
+    color: PURE_WHITE,
     borderRadius: 4
   }
 });
 
-const BillPDF = ({ formData }) => {
+const BillPDF = ({ formData, showQR = false }) => {
   const toSafeDate = (value) => {
     if (!value) return null;
     try {
@@ -128,110 +144,111 @@ const BillPDF = ({ formData }) => {
     }).format(d);
   };
 
-  // Split services into chunks of 6 for pagination
-  const chunkServices = (vehicles, servicesPerPage = 6) => {
-    const allServices = [];
+  // Flatten services so they naturally flow across pages
+  const getAllServices = (vehicles) => {
+    const list = [];
     vehicles?.forEach((vehicle) => {
-      vehicle?.services?.forEach((service) => {
-        allServices.push({ vehicle, service });
-      });
+      vehicle?.services?.forEach((service) => list.push({ vehicle, service }));
     });
-
-    const chunks = [];
-    for (let i = 0; i < allServices.length; i += servicesPerPage) {
-      chunks.push(allServices.slice(i, i + servicesPerPage));
-    }
-    return chunks;
+    return list;
   };
 
-  const serviceChunks = chunkServices(formData?.vehicles);
+  const allServices = getAllServices(formData?.vehicles);
 
   return (
     <Document>
-      {serviceChunks.map((chunk, pageIndex) => (
-        <Page key={pageIndex} size="A4" style={styles.page}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Image src={logo} style={styles.headerLogo} />
-            <View style={styles.headerText}>
-              <Text style={{ fontSize: 12, fontWeight: 'bold' }}>Universal car wash sàrl</Text>
-              <Text style={{ fontSize: 8 }}>Rte de Saint-Georges 77, 1213 Petit-Lancy, Geneva</Text>
-            </View>
+      <Page size="A4" style={styles.page}>
+        {/* Header — fixed on all pages */}
+        <View style={styles.header} fixed>
+          <Image src={logo} style={styles.headerLogo} />
+          <View style={styles.headerText}>
+            <Text style={{ fontSize: 12, fontWeight: 'bold' }}>Universal Car Wash Sàrl</Text>
+            <Text style={{ fontSize: 8 }}>Rte de Saint-Georges 77, 1213 Petit-Lancy, GE</Text>
           </View>
+        </View>
 
-          {/* Bill Info - Only on first page */}
-          {pageIndex === 0 && (
-            <>
-              <View style={styles.billInfo}>
-                <Text style={{ fontSize: 12, color: '#1976d2', fontWeight: 'bold' }}>Facture n° {formData?.billReference}</Text>
-                <View>
-                  <Text style={{ fontSize: 8 }}>Date: {formatDate(formData?.serviceDate)}</Text>
-                  <Text style={{ fontSize: 8 }}>Échéance: {formatDate(formData?.paymentDueDate)}</Text>
-                </View>
-              </View>
+        {/* Bill Info & Customer Info (render once at top) */}
+        <View style={styles.billInfo}>
+          <Text style={{ fontSize: 12, color: BRAND_RED, fontWeight: 'bold' }}>N° client {formData?.customerReference}</Text>
+          <View>
+            <Text style={{ fontSize: 8 }}>Date : {formatDate(formData?.serviceDate)}</Text>
+            <Text style={{ fontSize: 8 }}>Échéance : {formatDate(formData?.paymentDueDate)}</Text>
+            <Text style={{ fontSize: 12, color: BRAND_RED, fontWeight: 'bold' }}>Facture n° {formData?.billReference}</Text>
+          </View>
+        </View>
 
-              {/* Customer Info */}
-              <View style={styles.customerInfo}>
-                <View style={{ marginBottom: '3mm' }}>
-                  <Text style={{ fontSize: 8, color: '#666' }}>Nom</Text>
-                  <Text style={{ fontSize: 9, fontWeight: 'bold' }}>{formData?.name}</Text>
-                </View>
-                <View style={{ marginBottom: '3mm' }}>
-                  <Text style={{ fontSize: 8, color: '#666' }}>Adresse</Text>
-                  <Text style={{ fontSize: 9 }}>{formData?.customerAddress || 'N/A'}</Text>
-                </View>
-                <View>
-                  <Text style={{ fontSize: 8, color: '#666' }}>Téléphone</Text>
-                  <Text style={{ fontSize: 9 }}>{formData?.phoneNumber}</Text>
-                </View>
-              </View>
-            </>
-          )}
+        <View style={styles.customerInfo}>
+          <View style={{ marginBottom: '3mm' }}>
+            <Text style={{ fontSize: 8, color: '#666666' }}>Nom</Text>
+            <Text style={{ fontSize: 9, fontWeight: 'bold' }}>{formData?.name}</Text>
+          </View>
+          <View style={{ marginBottom: '3mm' }}>
+            <Text style={{ fontSize: 8, color: '#666666' }}>Adresse</Text>
+            <Text style={{ fontSize: 9 }}>{formData?.customerAddress || 'N/A'}</Text>
+          </View>
+          <View>
+            <Text style={{ fontSize: 8, color: '#666666' }}>Téléphone</Text>
+            <Text style={{ fontSize: 9 }}>{formData?.phoneNumber}</Text>
+          </View>
+        </View>
 
-          {/* Services Table */}
-          <View style={styles.servicesTable}>
+        {/* Services Table */}
+        <View style={styles.servicesTable}>
+          <View style={styles.tableOuter}>
             <View style={styles.tableHeader}>
               <Text style={styles.col1}>Date du service</Text>
               <Text style={styles.col2}>Véhicule</Text>
               <Text style={styles.col3}>Désignation</Text>
               <Text style={styles.col4}>Montant HT</Text>
             </View>
-            {chunk.map((item, index) => (
-              <View key={index} style={[styles.tableRow, index % 2 === 0 && { backgroundColor: '#f5f5f5' }]}>
+
+            {allServices.map((item, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.tableRow,
+                  index % 2 === 0 && { backgroundColor: LIGHT_GREY },
+                  index === allServices.length - 1 && { borderBottomWidth: 0 } // avoid double bottom line vs outer border
+                ]}
+                wrap={false} // keep a row from splitting across pages
+              >
                 <Text style={styles.col1}>{formatDate(item?.service?.serviceDate || formData?.serviceDate)}</Text>
                 <View style={styles.col2}>
                   <Text style={{ fontWeight: 'bold' }}>{item.vehicle.vehicleType}</Text>
-                  <Text style={{ fontSize: 8, color: '#666' }}>{item.vehicle.vehicleNumber}</Text>
+                  <Text style={{ fontSize: 8, color: '#666666' }}>{item.vehicle.vehicleNumber}</Text>
                 </View>
                 <Text style={styles.col3}>{item.service.name}</Text>
                 <Text style={styles.col4}>{Number(item.service.price).toFixed(2)} .-CHF</Text>
               </View>
             ))}
           </View>
+        </View>
 
-          {/* Summary - Only on last page */}
-          {pageIndex === serviceChunks.length - 1 && (
-            <View style={styles.summary}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: '2mm' }}>
-                <Text>Sous-total:</Text>
-                <Text>{formData?.subTotal.toFixed(2)} .-CHF</Text>
-              </View>
-              {formData?.discountValue > 0 && (
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: '2mm' }}>
-                  <Text style={{ color: '#f44336' }}>Remise:</Text>
-                  <Text style={{ color: '#f44336' }}>-{formData?.discountValue.toFixed(2)} .-CHF</Text>
-                </View>
-              )}
-              <View style={styles.total}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Text style={{ fontWeight: 'bold' }}>Net à Payer:</Text>
-                  <Text style={{ fontWeight: 'bold' }}>{formData?.total.toFixed(2)} .-CHF</Text>
-                </View>
-              </View>
+        {/* Summary (naturally lands on last page after services) */}
+        <View style={styles.summary}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: '2mm' }}>
+            <Text>Sous-total :</Text>
+            <Text>{formData?.subTotal.toFixed(2)} .-CHF</Text>
+          </View>
+          {formData?.discountValue > 0 && (
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: '2mm' }}>
+              <Text style={{ color: BRAND_RED }}>Remise :</Text>
+              <Text style={{ color: BRAND_RED }}>-{formData?.discountValue.toFixed(2)} .-CHF</Text>
             </View>
           )}
+          <View style={styles.total}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={{ fontWeight: 'bold' }}>Net à payer :</Text>
+              <Text style={{ fontWeight: 'bold' }}>{formData?.total.toFixed(2)} .-CHF</Text>
+            </View>
+          </View>
+        </View>
 
-          {/* Payment Section - Show on all pages */}
+        {/* Spacer pushes QR/payment to bottom of final page */}
+        <View style={{ flexGrow: 1 }} />
+
+        {/* Payment Section — appears once at the end, only if showQR is true */}
+        {showQR && (
           <View style={styles.paymentSection}>
             <Image src={qrcode} style={styles.qrCode} />
             <View style={styles.paymentDetails}>
@@ -240,25 +257,37 @@ const BillPDF = ({ formData }) => {
               <Text style={{ fontWeight: 'bold', marginBottom: '2mm' }}>CH55 3000 5279 3451 7401 A</Text>
               <Text>Bénéficiaire</Text>
               <Text>Universal Car Wash Sàrl</Text>
-              <Text style={{ color: '#666' }}>Route de Saint-Georges 77</Text>
-              <Text style={{ color: '#666', marginBottom: '2mm' }}>1213 Petit-Lancy</Text>
+              <Text style={{ color: '#666666' }}>Route de Saint-Georges 77</Text>
+              <Text style={{ color: '#666666', marginBottom: '2mm' }}>1213 Petit-Lancy</Text>
               <Text>Référence</Text>
               <Text style={{ fontWeight: 'bold' }}>00 00000 00000 00002 30828 00017</Text>
             </View>
           </View>
+        )}
 
-          {/* Footer - Show on all pages */}
-          <View style={styles.footer}>
-            <Text style={{ color: '#FF2400', fontWeight: 'bold', textAlign: 'center', marginBottom: '2mm' }}>
-              Merci pour votre confiance !
-            </Text>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={{ fontSize: 8 }}>info@theuniversalcarwash.ch</Text>
-              <Text style={{ fontSize: 8 }}>+41 793270036</Text>
-            </View>
+        {/* Footer — fixed on every page with left/center/right alignment */}
+        <View style={styles.footer} fixed>
+          {/* Top tagline (centered) */}
+          <View style={{ alignItems: 'center', marginBottom: 4 }}>
+            <Text style={{ color: '#FF2400', fontWeight: 'bold', fontSize: 10 }}>Merci pour votre confiance !</Text>
           </View>
-        </Page>
-      ))}
+
+          {/* Divider */}
+          <View style={{ height: 1, backgroundColor: '#666666', marginBottom: 4 }} />
+
+          {/* Three equal columns: email (left), phone (center), page (right) */}
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={{ fontSize: 8, color: '#FFFFFF', flex: 1, textAlign: 'left' }}>info@theuniversalcarwash.ch</Text>
+
+            <Text style={{ fontSize: 8, color: '#FFFFFF', flex: 1, textAlign: 'center' }}>+41 793270036</Text>
+
+            <Text
+              style={{ fontSize: 8, color: '#FFFFFF', flex: 1, textAlign: 'right' }}
+              render={({ pageNumber, totalPages }) => `Page ${pageNumber} / ${totalPages}`}
+            />
+          </View>
+        </View>
+      </Page>
     </Document>
   );
 };

@@ -28,7 +28,7 @@ import { useLocation } from 'react-router-dom';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import BillPDF from './BillPDF';
 
-const BRAND_RED = '#B00020';
+const BRAND_RED = '#CC1F2A';
 
 const BillView = () => {
   const location = useLocation();
@@ -101,7 +101,7 @@ const BillView = () => {
       }}
     >
       <Box sx={{ flexShrink: 0 }}>
-        <img src={logo} alt="Company Logo" style={{ width: '100%', maxWidth: '70px', height: 'auto' }} />
+        <img src={logo} alt="Company Logo" style={{ width: '100%', maxWidth: '150px', height: 'auto' }} />
       </Box>
       <Box sx={{ flexGrow: 1, textAlign: { xs: 'left', sm: 'right' } }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 600, fontSize: { xs: '0.8rem', sm: '0.9rem' }, mb: 0.2, color: 'white' }}>

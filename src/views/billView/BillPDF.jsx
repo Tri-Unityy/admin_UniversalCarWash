@@ -14,7 +14,7 @@ Font.register({
   ]
 });
 
-const BRAND_RED = '#B00020'; // darker, print-friendly red
+const BRAND_RED = '#CC1F2A';
 const PURE_BLACK = '#000000';
 const PURE_WHITE = '#FFFFFF';
 const LIGHT_GREY = '#F2F2F2';
@@ -30,19 +30,18 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     backgroundColor: PURE_BLACK,
-    padding: '4mm',
     marginBottom: '5mm',
     borderRadius: 4
   },
   headerLogo: {
-    width: '20mm',
-    height: 'auto'
+    width: '40mm'
   },
   headerText: {
     color: PURE_WHITE,
     flex: 1,
     textAlign: 'right',
-    fontSize: 10
+    fontSize: 10,
+    padding: '4mm'
   },
   billInfo: {
     flexDirection: 'row',
@@ -87,18 +86,40 @@ const styles = StyleSheet.create({
     borderTopColor: BORDER_GREY,
     paddingTop: '2mm'
   },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: '1.5mm'
+  },
+  summaryText: {
+    fontSize: 10
+  },
+
   total: {
     backgroundColor: BRAND_RED,
-    paddingVertical: '1.5mm',
-    paddingHorizontal: '3mm',
-    marginTop: '2mm',
+    paddingVertical: '1mm',
+    paddingHorizontal: '2mm',
+    marginTop: '1.5mm',
     borderRadius: 2,
     color: PURE_WHITE
+  },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  totalLabel: {
+    fontWeight: 'bold',
+    fontSize: 12
+  },
+  totalValue: {
+    fontWeight: 'bold',
+    fontSize: 12
   },
   paymentSection: {
     flexDirection: 'row',
     marginTop: '5mm',
-    marginBottom: 0 // sits just above footer
+    marginBottom: 0
   },
   qrCode: {
     width: '35%',
@@ -226,20 +247,22 @@ const BillPDF = ({ formData, showQR = false }) => {
 
         {/* Summary (naturally lands on last page after services) */}
         <View style={styles.summary}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: '2mm' }}>
-            <Text>Sous-total :</Text>
-            <Text>{formData?.subTotal.toFixed(2)} .-CHF</Text>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryText}>Sous-total :</Text>
+            <Text style={styles.summaryText}>{formData?.subTotal.toFixed(2)} .-CHF</Text>
           </View>
+
           {formData?.discountValue > 0 && (
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: '2mm' }}>
-              <Text style={{ color: BRAND_RED }}>Remise :</Text>
-              <Text style={{ color: BRAND_RED }}>-{formData?.discountValue.toFixed(2)} .-CHF</Text>
+            <View style={styles.summaryRow}>
+              <Text style={[styles.summaryText, { color: BRAND_RED }]}>Remise :</Text>
+              <Text style={[styles.summaryText, { color: BRAND_RED }]}>-{formData?.discountValue.toFixed(2)} .-CHF</Text>
             </View>
           )}
+
           <View style={styles.total}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={{ fontWeight: 'bold' }}>Net à payer :</Text>
-              <Text style={{ fontWeight: 'bold' }}>{formData?.total.toFixed(2)} .-CHF</Text>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Net à payer (T.T.C) :</Text>
+              <Text style={styles.totalValue}>{formData?.total.toFixed(2)} .-CHF</Text>
             </View>
           </View>
         </View>

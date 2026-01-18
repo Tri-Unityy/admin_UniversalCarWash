@@ -598,7 +598,7 @@ const BillView = () => {
                       }}
                     >
                       <Typography variant="body1" sx={{ fontWeight: 700, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
-                        Net à Payer:
+                        Net à Payer
                       </Typography>
                       <Typography variant="h6" sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
                         {formData?.total} .-CHF

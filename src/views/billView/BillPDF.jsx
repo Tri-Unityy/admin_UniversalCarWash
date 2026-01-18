@@ -261,7 +261,7 @@ const BillPDF = ({ formData, showQR = false }) => {
 
           <View style={styles.total}>
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Net à payer (T.T.C) :</Text>
+              <Text style={styles.totalLabel}>Net à payer (T.T.C) </Text>
               <Text style={styles.totalValue}>{formData?.total.toFixed(2)} .-CHF</Text>
             </View>
           </View>

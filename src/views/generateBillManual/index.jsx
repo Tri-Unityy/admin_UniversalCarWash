@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import Checkbox from '@mui/material/Checkbox';
 import {
   Button,
   TextField,
@@ -24,6 +25,8 @@ const GenerateBillManual = () => {
   const booking = location.state || {};
   const [loading, setLoading] = useState(false);
   const currentDate = new Date().toISOString().split('T')[0];
+  const [isDevisBill, setIsDevisBill] = useState(false);
+  const [devisBillId, setDevisBillId] = useState('');
 
   const calculateSubTotal = (vehicles) =>
     vehicles.reduce((sum, vehicle) => sum + vehicle.services.reduce((vSum, s) => vSum + (s.price || 0), 0), 0);
@@ -149,6 +152,12 @@ const GenerateBillManual = () => {
         setLoading(false);
         return;
       }
+      if (isDevisBill && !devisBillId.trim()) {
+        alert('Please enter Devis Bill ID');
+        setLoading(false);
+        return;
+      }
+      const finalBillReference = isDevisBill ? devisBillId : formData.billReference;
       const saveData = {
         id: bookingID,
         name: formData.name,
@@ -157,19 +166,26 @@ const GenerateBillManual = () => {
         discount: formData.discount,
         vehicles: formData.vehicles,
         paymentDueDate: formData.paymentDueDate,
-        serviceDate: formData.serviceDate,
+        serviceDate: isDevisBill ? null : formData.serviceDate,
         customerAddress: formData.customerAddress,
         customerReference: formData.customerReference,
         subTotal: formData.subTotal,
         total: formData.total,
-        billReference: formData.billReference,
+        billReference: finalBillReference,
         timeSlot: formData.timeSlot,
-        discountValue: formData.discountValue
+        discountValue: formData.discountValue,
+        isDevisBill: isDevisBill
       };
 
       await saveManualBill(bookingID, saveData);
 
-      navigate('/generatedBill', { state: { ...formData, id: bookingID } });
+      const viewState = {
+        ...formData,
+        id: bookingID,
+        isDevisBill,
+        billReference: finalBillReference
+      };
+      navigate('/generatedBill', { state: viewState });
     } catch (error) {
       console.error('Error handling booking ID:', error);
     } finally {
@@ -192,6 +208,28 @@ const GenerateBillManual = () => {
           <Typography variant={{ xs: 'h5', sm: 'h4' }} component="h1" sx={{ flexGrow: 1 }}>
             Generate Manual Bill
           </Typography>
+          <Grid item xs={12}>
+            <Box
+              sx={{
+                border: '2px dashed',
+                borderColor: isDevisBill ? 'primary.main' : 'grey.300',
+                borderRadius: 2,
+                p: 2,
+                bgcolor: isDevisBill ? 'primary.light' : 'grey.50',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Checkbox checked={isDevisBill} onChange={(e) => setIsDevisBill(e.target.checked)} color="primary" />
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Generate Devis Bill
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          </Grid>
+
           <Chip label={`ID: ${bookingID}`} color="primary" variant="outlined" size="small" />
         </Box>
       }
@@ -235,16 +273,30 @@ const GenerateBillManual = () => {
                   variant="outlined"
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Bill Reference"
-                  name="billReference"
-                  value={formData.billReference}
-                  onChange={handleInputChange}
-                  variant="outlined"
-                />
-              </Grid>
+              {!isDevisBill && (
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Bill Reference"
+                    name="billReference"
+                    value={formData.billReference}
+                    onChange={handleInputChange}
+                    variant="outlined"
+                  />
+                </Grid>
+              )}
+              {isDevisBill && (
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Devis Bill ID"
+                    value={devisBillId}
+                    onChange={(e) => setDevisBillId(e.target.value)}
+                    variant="outlined"
+                    required
+                  />
+                </Grid>
+              )}
               <Grid item xs={12}>
                 <TextField
                   fullWidth
@@ -290,30 +342,35 @@ const GenerateBillManual = () => {
                   onChange={handleInputChange}
                   InputLabelProps={{ shrink: true }}
                   variant="outlined"
+                  disabled={isDevisBill}
                 />
               </Grid>
-              <Grid item xs={12} md={4}>
-                <TextField
-                  fullWidth
-                  label="Payment Due Date"
-                  name="paymentDueDate"
-                  type="date"
-                  value={formData.paymentDueDate}
-                  onChange={handleInputChange}
-                  InputLabelProps={{ shrink: true }}
-                  variant="outlined"
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Time Slot"
-                  name="timeSlot"
-                  value={formData.timeSlot}
-                  onChange={handleInputChange}
-                  variant="outlined"
-                />
-              </Grid>
+              {!isDevisBill && (
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    fullWidth
+                    label="Payment Due Date"
+                    name="paymentDueDate"
+                    type="date"
+                    value={formData.paymentDueDate}
+                    onChange={handleInputChange}
+                    InputLabelProps={{ shrink: true }}
+                    variant="outlined"
+                  />
+                </Grid>
+              )}
+              {!isDevisBill && (
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Time Slot"
+                    name="timeSlot"
+                    value={formData.timeSlot}
+                    onChange={handleInputChange}
+                    variant="outlined"
+                  />
+                </Grid>
+              )}
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
@@ -482,6 +539,7 @@ const GenerateBillManual = () => {
                               size="small"
                               InputLabelProps={{ shrink: true }}
                               sx={{ width: '40%' }}
+                              disabled={isDevisBill}
                             />
                           </Box>
                           <Box
@@ -587,7 +645,7 @@ const GenerateBillManual = () => {
             sx={{ marginRight: 2 }}
             disabled={formData.vehicles.some((vehicle) => vehicle.services.some((service) => !service.name || !service.price))}
           >
-            {loading ? <CircularProgress size={24} color="inherit" /> : 'Generate Bill'}
+            {loading ? <CircularProgress size={24} color="inherit" /> : isDevisBill ? 'Generate Devis Bill' : 'Generate Bill'}
           </Button>
         </Box>
       </Box>

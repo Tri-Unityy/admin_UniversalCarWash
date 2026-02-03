@@ -48,6 +48,23 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: '5mm'
   },
+  devisInfo: {
+    width: '100%',
+    paddingVertical: 5,
+    marginBottom: 10,
+    borderWidth: 2,
+    borderColor: '#D32F2F',
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+
+  devisTitle: {
+    fontSize: 36,
+    fontWeight: '800',
+    color: 'black',
+    letterSpacing: 2
+  },
   customerInfo: {
     marginBottom: '5mm'
   },
@@ -142,7 +159,7 @@ const styles = StyleSheet.create({
   }
 });
 
-const BillPDF = ({ formData, showQR = false }) => {
+const BillPDF = ({ formData, isDevisBill = false, showQR = false, showRappel = false }) => {
   const toSafeDate = (value) => {
     if (!value) return null;
     try {
@@ -188,13 +205,32 @@ const BillPDF = ({ formData, showQR = false }) => {
           </View>
         </View>
 
-        {/* Bill Info & Customer Info (render once at top) */}
+        {showRappel && (
+          <View style={styles.devisInfo}>
+            <Text style={styles.devisTitle}>RAPPEL</Text>
+          </View>
+        )}
+
+        {/* Devis header: black, centered (estimation bill) */}
+        {isDevisBill && (
+          <View style={[styles.devisInfo, { borderColor: PURE_BLACK }]}>
+            <Text style={[styles.devisTitle, { color: PURE_BLACK, fontSize: 28 }]}>Devis</Text>
+          </View>
+        )}
+
+        {/* Bill Info: for completed bills show Facture n°, Date, Échéance; for Devis (estimation) hide them */}
         <View style={styles.billInfo}>
-          <Text style={{ fontSize: 12, color: BRAND_RED, fontWeight: 'bold' }}>N° client {formData?.customerReference}</Text>
+          {!isDevisBill && (
+            <Text style={{ fontSize: 12, color: BRAND_RED, fontWeight: 'bold' }}>N° client {formData?.customerReference}</Text>
+          )}
           <View>
-            <Text style={{ fontSize: 8 }}>Date : {formatDate(formData?.serviceDate)}</Text>
-            <Text style={{ fontSize: 8 }}>Échéance : {formatDate(formData?.paymentDueDate)}</Text>
-            <Text style={{ fontSize: 12, color: BRAND_RED, fontWeight: 'bold' }}>Facture n° {formData?.billReference}</Text>
+            {!isDevisBill && (
+              <>
+                <Text style={{ fontSize: 8 }}>Date : {formatDate(formData?.serviceDate)}</Text>
+                <Text style={{ fontSize: 8 }}>Échéance : {formatDate(formData?.paymentDueDate)}</Text>
+                <Text style={{ fontSize: 12, color: BRAND_RED, fontWeight: 'bold' }}>Facture n° {formData?.billReference}</Text>
+              </>
+            )}
           </View>
         </View>
 
@@ -203,6 +239,12 @@ const BillPDF = ({ formData, showQR = false }) => {
             <Text style={{ fontSize: 8, color: '#666666' }}>Nom</Text>
             <Text style={{ fontSize: 9, fontWeight: 'bold' }}>{formData?.name}</Text>
           </View>
+          {!isDevisBill && (
+            <View style={{ marginBottom: '3mm' }}>
+              <Text style={{ fontSize: 8, color: '#666666' }}>N° Client</Text>
+              <Text style={{ fontSize: 9 }}>{formData?.customerReference || 'N/A'}</Text>
+            </View>
+          )}
           <View style={{ marginBottom: '3mm' }}>
             <Text style={{ fontSize: 8, color: '#666666' }}>Adresse</Text>
             <Text style={{ fontSize: 9 }}>{formData?.customerAddress || 'N/A'}</Text>
@@ -213,11 +255,11 @@ const BillPDF = ({ formData, showQR = false }) => {
           </View>
         </View>
 
-        {/* Services Table */}
+        {/* Services Table: hide "Date du service" column for Devis (estimation) */}
         <View style={styles.servicesTable}>
           <View style={styles.tableOuter}>
             <View style={styles.tableHeader}>
-              <Text style={styles.col1}>Date du service</Text>
+              {!isDevisBill && <Text style={styles.col1}>Date du service</Text>}
               <Text style={styles.col2}>Véhicule</Text>
               <Text style={styles.col3}>Désignation</Text>
               <Text style={styles.col4}>Montant HT</Text>
@@ -229,17 +271,19 @@ const BillPDF = ({ formData, showQR = false }) => {
                 style={[
                   styles.tableRow,
                   index % 2 === 0 && { backgroundColor: LIGHT_GREY },
-                  index === allServices.length - 1 && { borderBottomWidth: 0 } // avoid double bottom line vs outer border
+                  index === allServices.length - 1 && { borderBottomWidth: 0 }
                 ]}
-                wrap={false} // keep a row from splitting across pages
+                wrap={false}
               >
-                <Text style={styles.col1}>{formatDate(item?.service?.serviceDate || formData?.serviceDate)}</Text>
+                {!isDevisBill && (
+                  <Text style={styles.col1}>{formatDate(item?.service?.serviceDate || formData?.serviceDate)}</Text>
+                )}
                 <View style={styles.col2}>
                   <Text style={{ fontWeight: 'bold' }}>{item.vehicle.vehicleType}</Text>
                   <Text style={{ fontSize: 8, color: '#666666' }}>{item.vehicle.vehicleNumber}</Text>
                 </View>
                 <Text style={styles.col3}>{item.service.name}</Text>
-                <Text style={styles.col4}>{Number(item.service.price).toFixed(2)} .-CHF</Text>
+                <Text style={styles.col4}>{Number(item.service.price).toFixed(2)} CHF</Text>
               </View>
             ))}
           </View>
@@ -249,20 +293,20 @@ const BillPDF = ({ formData, showQR = false }) => {
         <View style={styles.summary}>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryText}>Sous-total :</Text>
-            <Text style={styles.summaryText}>{formData?.subTotal.toFixed(2)} .-CHF</Text>
+            <Text style={styles.summaryText}>{formData?.subTotal.toFixed(2)} CHF</Text>
           </View>
 
           {formData?.discountValue > 0 && (
             <View style={styles.summaryRow}>
               <Text style={[styles.summaryText, { color: BRAND_RED }]}>Remise :</Text>
-              <Text style={[styles.summaryText, { color: BRAND_RED }]}>-{formData?.discountValue.toFixed(2)} .-CHF</Text>
+              <Text style={[styles.summaryText, { color: BRAND_RED }]}>-{formData?.discountValue.toFixed(2)} CHF</Text>
             </View>
           )}
 
           <View style={styles.total}>
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Net à payer (T.T.C) </Text>
-              <Text style={styles.totalValue}>{formData?.total.toFixed(2)} .-CHF</Text>
+              <Text style={styles.totalLabel}>Net à payer (TTC) </Text>
+              <Text style={styles.totalValue}>{formData?.total.toFixed(2)} CHF</Text>
             </View>
           </View>
         </View>
@@ -270,8 +314,8 @@ const BillPDF = ({ formData, showQR = false }) => {
         {/* Spacer pushes QR/payment to bottom of final page */}
         <View style={{ flexGrow: 1 }} />
 
-        {/* Payment Section — appears once at the end, only if showQR is true */}
-        {showQR && (
+        {/* Payment Section — only for invoices; Devis never shows QR */}
+        {showQR && !isDevisBill && (
           <View style={styles.paymentSection}>
             <Image src={qrcode} style={styles.qrCode} />
             <View style={styles.paymentDetails}>

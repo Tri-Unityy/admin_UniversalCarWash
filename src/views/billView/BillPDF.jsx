@@ -52,9 +52,6 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingVertical: 5,
     marginBottom: 10,
-    borderWidth: 2,
-    borderColor: '#D32F2F',
-    borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center'
   },
@@ -213,8 +210,12 @@ const BillPDF = ({ formData, isDevisBill = false, showQR = false, showRappel = f
 
         {/* Devis header: black, centered (estimation bill) */}
         {isDevisBill && (
-          <View style={[styles.devisInfo, { borderColor: PURE_BLACK }]}>
+          <View style={[styles.devisInfo, { borderColor: PURE_BLACK, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}>
+            <View style={{ flex: 1 }} />
             <Text style={[styles.devisTitle, { color: PURE_BLACK, fontSize: 28 }]}>Devis</Text>
+            <View style={{ flex: 1, alignItems: 'flex-end' }}>
+              <Text style={{ fontSize: 9, color: PURE_BLACK }}>Date : {formatDate(formData?.bookingdate || formData?.bookingDate)}</Text>
+            </View>
           </View>
         )}
 

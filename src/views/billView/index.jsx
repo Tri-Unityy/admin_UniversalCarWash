@@ -413,12 +413,27 @@ const BillView = () => {
               {/* Header */}
               <BillHeader />
 
-              {/* Devis title - only on first page, black centered */}
+              {/* Devis section: title centered, booking date on the right (same as BillPDF) */}
               {pageIndex === 0 && isDevisBill && (
-                <Box sx={{ textAlign: 'center', py: 1.5, mb: 0.5 }}>
-                  <Typography variant="h1" sx={{ fontWeight: 700, color: 'black', letterSpacing: 1,fontSize: '60px' }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    py: 1.5,
+                    mb: 0.5
+                  }}
+                >
+                  <Box sx={{ flex: 1 }} />
+                  <Typography variant="h1" sx={{ fontWeight: 500, color: 'black', letterSpacing: 1, fontSize: '60px' }}>
                     Devis
                   </Typography>
+                  <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+                    <Typography variant="caption" sx={{ color: 'black', fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
+                      Date : {formatDate(formData?.bookingdate || formData?.bookingDate)}
+                    </Typography>
+                  </Box>
                 </Box>
               )}
 

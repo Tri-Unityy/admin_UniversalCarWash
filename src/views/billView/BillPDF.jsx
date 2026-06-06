@@ -240,12 +240,6 @@ const BillPDF = ({ formData, isDevisBill = false, showQR = false, showRappel = f
             <Text style={{ fontSize: 8, color: '#666666' }}>Nom</Text>
             <Text style={{ fontSize: 9, fontWeight: 'bold' }}>{formData?.name}</Text>
           </View>
-          {!isDevisBill && (
-            <View style={{ marginBottom: '3mm' }}>
-              <Text style={{ fontSize: 8, color: '#666666' }}>N° Client</Text>
-              <Text style={{ fontSize: 9 }}>{formData?.customerReference || 'N/A'}</Text>
-            </View>
-          )}
           <View style={{ marginBottom: '3mm' }}>
             <Text style={{ fontSize: 8, color: '#666666' }}>Adresse</Text>
             <Text style={{ fontSize: 9 }}>{formData?.customerAddress || 'N/A'}</Text>
@@ -345,7 +339,7 @@ const BillPDF = ({ formData, isDevisBill = false, showQR = false, showRappel = f
 
           {/* Three equal columns: email (left), phone (center), page (right) */}
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={{ fontSize: 8, color: '#FFFFFF', flex: 1, textAlign: 'left' }}>info@theuniversalcarwash.ch</Text>
+            <Text style={{ fontSize: 8, color: '#FFFFFF', flex: 1, textAlign: 'left' }}>info@universalcarwash.ch</Text>
 
             <Text style={{ fontSize: 8, color: '#FFFFFF', flex: 1, textAlign: 'center' }}>+41 793270036</Text>
 

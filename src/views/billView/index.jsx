@@ -138,7 +138,7 @@ const BillView = () => {
       >
         <Box sx={{ flex: 1, textAlign: 'left' }}>
           <Typography variant="caption" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, color: 'white', opacity: 0.9 }}>
-            info@theuniversalcarwash.ch
+            info@universalcarwash.ch
           </Typography>
         </Box>
 

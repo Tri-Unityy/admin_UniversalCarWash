@@ -345,7 +345,7 @@ const BillPDF = ({ formData, isDevisBill = false, showQR = false, showRappel = f
 
           {/* Three equal columns: email (left), phone (center), page (right) */}
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={{ fontSize: 8, color: '#FFFFFF', flex: 1, textAlign: 'left' }}>info@theuniversalcarwash.ch</Text>
+            <Text style={{ fontSize: 8, color: '#FFFFFF', flex: 1, textAlign: 'left' }}>info@universalcarwash.ch</Text>
 
             <Text style={{ fontSize: 8, color: '#FFFFFF', flex: 1, textAlign: 'center' }}>+41 793270036</Text>
 

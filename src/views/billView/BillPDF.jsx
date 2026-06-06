@@ -240,12 +240,6 @@ const BillPDF = ({ formData, isDevisBill = false, showQR = false, showRappel = f
             <Text style={{ fontSize: 8, color: '#666666' }}>Nom</Text>
             <Text style={{ fontSize: 9, fontWeight: 'bold' }}>{formData?.name}</Text>
           </View>
-          {!isDevisBill && (
-            <View style={{ marginBottom: '3mm' }}>
-              <Text style={{ fontSize: 8, color: '#666666' }}>N° Client</Text>
-              <Text style={{ fontSize: 9 }}>{formData?.customerReference || 'N/A'}</Text>
-            </View>
-          )}
           <View style={{ marginBottom: '3mm' }}>
             <Text style={{ fontSize: 8, color: '#666666' }}>Adresse</Text>
             <Text style={{ fontSize: 9 }}>{formData?.customerAddress || 'N/A'}</Text>

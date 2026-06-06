@@ -6,10 +6,6 @@ import MainCard from 'ui-component/cards/MainCard';
 
 // ==============================|| SAMPLE PAGE ||============================== //
 
-const BillCreation = () => (
-  <MainCard title="Enter Bill Details">
-
-  </MainCard>
-);
+const BillCreation = () => <MainCard title="Enter Bill Details"></MainCard>;
 
 export default BillCreation;

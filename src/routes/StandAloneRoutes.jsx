@@ -7,14 +7,14 @@ const GeneratedBill = lazy(() => import('views/billView'));
 
 // Standalone routes
 const StandaloneRoutes = {
-  path: '/',
-  element: <GeneratedBill />, // Assuming this is the root element for your new route
-  children: [
-    {
-      path: 'generatedBill',
-      element: <GeneratedBill />
-    }
-  ]
+    path: '/',
+    element: <GeneratedBill />, // Assuming this is the root element for your new route
+    children: [
+        {
+            path: 'generatedBill',
+            element: <GeneratedBill />
+        }
+    ]
 };
 
 export default StandaloneRoutes;

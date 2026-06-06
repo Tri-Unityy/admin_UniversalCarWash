@@ -28,13 +28,13 @@ export default defineConfig({
   server: {
     // this ensures that the browser opens upon server start
     open: true,
-    // this sets a default port to 3000
-    port: 3000
+    // this sets a default port to 3002
+    port: 3002
   },
   preview: {
     // this ensures that the browser opens upon preview start
     open: true,
-    // this sets a default port to 3000
-    port: 3000
+    // this sets a default port to 3002
+    port: 3002
   }
 });

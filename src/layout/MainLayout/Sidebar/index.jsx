@@ -14,6 +14,7 @@ import { BrowserView, MobileView } from 'react-device-detect';
 // project imports
 import MenuCard from './MenuCard';
 import MenuList from './MenuList';
+import BillsList from './BillsList';
 import LogoSection from '../LogoSection';
 import Chip from 'ui-component/extended/Chip';
 
@@ -42,6 +43,7 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
           }}
         >
           <MenuList />
+          <BillsList />
           <MenuCard />
           <Stack direction="row" justifyContent="center" sx={{ mb: 2 }}>
             <Chip label={import.meta.env.VITE_APP_VERSION} disabled chipcolor="secondary" size="small" sx={{ cursor: 'pointer' }} />
@@ -51,6 +53,7 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
       <MobileView>
         <Box sx={{ px: 2 }}>
           <MenuList />
+          <BillsList />
           <MenuCard />
           <Stack direction="row" justifyContent="center" sx={{ mb: 2 }}>
             <Chip label={import.meta.env.VITE_APP_VERSION} disabled chipcolor="secondary" size="small" sx={{ cursor: 'pointer' }} />

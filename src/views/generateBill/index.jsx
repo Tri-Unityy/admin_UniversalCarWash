@@ -3,8 +3,8 @@ import { useLocation } from 'react-router-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, TextField, Typography, Paper, Box } from '@mui/material';
 import MainCard from 'ui-component/cards/MainCard';
-import { getFirestore, doc, updateDoc } from 'firebase/firestore'; // Ensure imports are correct
-import { db } from './../../utils/firebase.config'; // Import your Firebase configuration
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../../utils/firebase.config';
 
 const GenerateBill = () => {
   const { id } = useParams();
@@ -65,9 +65,6 @@ const GenerateBill = () => {
 
   const handleGenerateBill = async () => {
     try {
-      // Get Firestore instance
-      const db = getFirestore();
-
       // Validate booking ID
       if (!id) {
         throw new Error('Booking ID is not available');
@@ -125,8 +122,15 @@ const GenerateBill = () => {
           <TextField fullWidth label="Vehicle Number" name="vehicleNumber" value={formData.vehicleNumber} onChange={handleInputChange} />
         </Box>
         <Box mb={2}>
-
-          <TextField fullWidth label="Discount" name="discount" type="number" placeholder='Eg : 10 (Enter the percentage of Discount)' value={formData.discount} onChange={handleInputChange} />
+          <TextField
+            fullWidth
+            label="Discount"
+            name="discount"
+            type="number"
+            placeholder="Eg : 10 (Enter the percentage of Discount)"
+            value={formData.discount}
+            onChange={handleInputChange}
+          />
         </Box>
 
         <Box mb={2}>

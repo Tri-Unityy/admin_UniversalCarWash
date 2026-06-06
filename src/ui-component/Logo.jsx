@@ -12,14 +12,9 @@ import logo from 'assets/images/Carwash.png';
 // ==============================|| LOGO SVG ||============================== //
 
 const Logo = () => {
-  const theme = useTheme();
+    const theme = useTheme();
 
-  return (
-
-     <img src={logo} alt="Carwash" width="150" />
-     
-
-  );
+    return <img src={logo} alt="Carwash" width="150" />;
 };
 
 export default Logo;

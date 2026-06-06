@@ -1,21 +1,21 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore/lite";
-import { Button, Typography, Paper, Box } from "@mui/material";
-import MainCard from "ui-component/cards/MainCard";
-import { db } from "./../../utils/firebase.config";
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { doc, getDoc } from 'firebase/firestore/lite';
+import { Button, Typography, Paper, Box } from '@mui/material';
+import MainCard from 'ui-component/cards/MainCard';
+import { db } from './../../utils/firebase.config';
 
 const BookingDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [pickUp, setPickUp] = useState("No");
+  const [pickUp, setPickUp] = useState('No');
 
   useEffect(() => {
     const fetchBooking = async () => {
       try {
-        const bookingRef = doc(db, "universal-carwash-booking", id);
+        const bookingRef = doc(db, 'universal-carwash-booking', id);
         const bookingSnap = await getDoc(bookingRef);
 
         if (bookingSnap.exists()) {
@@ -24,7 +24,7 @@ const BookingDetails = () => {
           setBooking(null); // Booking not found
         }
       } catch (error) {
-        console.error("Error fetching booking:", error);
+        console.error('Error fetching booking:', error);
       } finally {
         setLoading(false);
       }
@@ -36,9 +36,6 @@ const BookingDetails = () => {
   const handleGenerateBill = () => {
     navigate(`/generateBill/${id}`, { state: booking });
   };
-
-
-
 
   if (loading) {
     return <Typography variant="h5">Loading booking details...</Typography>;
@@ -73,7 +70,7 @@ const BookingDetails = () => {
           <Typography variant="h6">Vehicle No: {booking.carnumber}</Typography>
         </Box>
         <Box mb={2}>
-          <Typography variant="h6">Pick UP: {booking.pickup ? "Yes" : "No"}</Typography>
+          <Typography variant="h6">Pick UP: {booking.pickup ? 'Yes' : 'No'}</Typography>
         </Box>
         <Box mb={2}>
           <Typography variant="h6">Pick UP Address: {booking.pickupAddress}</Typography>
@@ -82,29 +79,20 @@ const BookingDetails = () => {
           <Typography variant="h6">Status: {booking.status}</Typography>
         </Box>
         <Box mb={2}>
-  <Typography variant="h6">
-    Services: {booking.services?.length ? booking.services.map(service => service.name).join(", ") : "None"}
-  </Typography>
-</Box>
+          <Typography variant="h6">
+            Services: {booking.services?.length ? booking.services.map((service) => service.name).join(', ') : 'None'}
+          </Typography>
+        </Box>
 
         <Box mb={2}>
           <Typography variant="h6">Amount: ${booking.total}</Typography>
         </Box>
 
         <Box mt={3}>
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => navigate("/bookings")}
-            sx={{ marginRight: 2 }}
-          >
+          <Button variant="outlined" color="secondary" onClick={() => navigate('/bookings')} sx={{ marginRight: 2 }}>
             Back to Bookings
           </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleGenerateBill}
-          >
+          <Button variant="contained" color="primary" onClick={handleGenerateBill}>
             Generate Bill
           </Button>
         </Box>

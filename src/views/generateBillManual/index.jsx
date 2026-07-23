@@ -17,19 +17,33 @@ import {
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, Receipt as ReceiptIcon } from '@mui/icons-material';
 import MainCard from 'ui-component/cards/MainCard';
-import { saveManualBill } from '../../api/bills';
+import { saveManualBill, updateManualBill } from '../../api/bills';
+
+const DEDUCTION_REASON_MAX_LENGTH = 200;
 
 const GenerateBillManual = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const booking = location.state || {};
+  const isEditing = Boolean(booking.id && booking.source === 'manual');
   const [loading, setLoading] = useState(false);
   const currentDate = new Date().toISOString().split('T')[0];
-  const [isDevisBill, setIsDevisBill] = useState(false);
-  const [devisBillId, setDevisBillId] = useState('');
+  const [isDevisBill, setIsDevisBill] = useState(booking.isDevisBill === true);
+  const [devisBillId, setDevisBillId] = useState(booking.isDevisBill ? booking.billReference || '' : '');
 
   const calculateSubTotal = (vehicles) =>
     vehicles.reduce((sum, vehicle) => sum + vehicle.services.reduce((vSum, s) => vSum + (s.price || 0), 0), 0);
+
+  const calculateDeductionsTotal = (deductions) =>
+    (deductions || []).reduce((sum, d) => {
+      const amount = parseFloat(d.amount);
+      return sum + (amount > 0 ? amount : 0);
+    }, 0);
+
+  const getValidDeductions = (deductions) =>
+    (deductions || [])
+      .filter((d) => (d.reason || '').trim() && parseFloat(d.amount) > 0)
+      .map((d) => ({ reason: d.reason.trim(), amount: parseFloat(d.amount) }));
 
   const generateBookingID = () => {
     const now = new Date();
@@ -46,18 +60,20 @@ const GenerateBillManual = () => {
     return bookingID;
   };
 
-  const [bookingID] = useState(generateBookingID());
+  const [bookingID] = useState(isEditing ? booking.id : generateBookingID());
 
   const [formData, setFormData] = useState({
-    id: bookingID,
+    id: isEditing ? booking.id : bookingID,
     name: booking.name || '',
-    phoneNumber: booking.phone || '',
+    phoneNumber: booking.phoneNumber || booking.phone || '',
     customerReference: booking.customerReference || '',
-    bookingdate: currentDate,
+    bookingdate: booking.bookingdate || booking.bookingDate || currentDate,
     billReference: booking.billReference || '',
     timeSlot: booking.timeSlot || '',
-    discount: 0,
-    discountValue: 0,
+    discount: booking.discount ?? 0,
+    discountValue: booking.discountValue ?? 0,
+    deductions: booking.deductions || [],
+    deductionsTotal: booking.deductionsTotal ?? calculateDeductionsTotal(booking.deductions),
     vehicles: booking.vehicles || [
       {
         vehicleType: booking.carmodel || '',
@@ -65,12 +81,29 @@ const GenerateBillManual = () => {
         services: booking.services?.map((s) => ({ name: s.name, price: s.price })) || []
       }
     ],
-    paymentDueDate: currentDate,
-    serviceDate: currentDate,
-    customerAddress: booking.address || '',
-    subTotal: booking.total || 0,
-    total: booking.total || 0
+    paymentDueDate: booking.paymentDueDate || currentDate,
+    serviceDate: booking.serviceDate || currentDate,
+    customerAddress: booking.customerAddress || booking.address || '',
+    subTotal: booking.subTotal ?? booking.total ?? 0,
+    total: booking.total ?? 0
   });
+
+  const areDeductionsValid = () => {
+    for (const deduction of formData.deductions) {
+      const reason = (deduction.reason || '').trim();
+      const hasReason = reason.length > 0;
+      const amount = parseFloat(deduction.amount);
+      const hasAmount = deduction.amount !== '' && deduction.amount !== undefined && !Number.isNaN(amount);
+
+      if (!hasReason && !hasAmount) continue;
+
+      if (hasAmount && amount <= 0) return false;
+      if (hasAmount && !hasReason) return false;
+      if (hasReason && (!hasAmount || amount <= 0)) return false;
+      if (reason.length > DEDUCTION_REASON_MAX_LENGTH) return false;
+    }
+    return true;
+  };
 
   const isFormValid = () => {
     if (!formData.name.trim()) return false;
@@ -92,9 +125,10 @@ const GenerateBillManual = () => {
   useEffect(() => {
     const subTotal = calculateSubTotal(formData.vehicles);
     const discountValue = (formData.discount * subTotal) / 100;
-    const total = subTotal - discountValue;
-    setFormData((prev) => ({ ...prev, subTotal, total, discountValue }));
-  }, [formData.vehicles, formData.discount]);
+    const deductionsTotal = calculateDeductionsTotal(formData.deductions);
+    const total = subTotal - discountValue - deductionsTotal;
+    setFormData((prev) => ({ ...prev, subTotal, total, discountValue, deductionsTotal }));
+  }, [formData.vehicles, formData.discount, formData.deductions]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -144,11 +178,39 @@ const GenerateBillManual = () => {
     setFormData((prev) => ({ ...prev, vehicles: updatedVehicles }));
   };
 
+  const handleAddDeduction = () => {
+    setFormData((prev) => ({
+      ...prev,
+      deductions: [...prev.deductions, { reason: '', amount: '' }]
+    }));
+  };
+
+  const handleRemoveDeduction = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      deductions: prev.deductions.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleDeductionChange = (index, field, value) => {
+    const updated = [...formData.deductions];
+    updated[index] = {
+      ...updated[index],
+      [field]: field === 'amount' ? value : value
+    };
+    setFormData((prev) => ({ ...prev, deductions: updated }));
+  };
+
   const handleGenerateBillManual = async () => {
     setLoading(true);
     try {
       if (!isFormValid()) {
         alert('Please fill in all required fields correctly.');
+        setLoading(false);
+        return;
+      }
+      if (!areDeductionsValid()) {
+        alert('Please enter a valid reason and positive amount for each deduction.');
         setLoading(false);
         return;
       }
@@ -158,6 +220,7 @@ const GenerateBillManual = () => {
         return;
       }
       const finalBillReference = isDevisBill ? devisBillId : formData.billReference;
+      const validDeductions = getValidDeductions(formData.deductions);
       const saveData = {
         id: bookingID,
         name: formData.name,
@@ -165,6 +228,8 @@ const GenerateBillManual = () => {
         bookingDate: formData.bookingdate,
         discount: formData.discount,
         vehicles: formData.vehicles,
+        deductions: validDeductions,
+        deductionsTotal: formData.deductionsTotal,
         paymentDueDate: formData.paymentDueDate,
         serviceDate: isDevisBill ? null : formData.serviceDate,
         customerAddress: formData.customerAddress,
@@ -177,13 +242,19 @@ const GenerateBillManual = () => {
         isDevisBill: isDevisBill
       };
 
-      await saveManualBill(bookingID, saveData);
+      if (isEditing) {
+        await updateManualBill(bookingID, saveData);
+      } else {
+        await saveManualBill(bookingID, saveData);
+      }
 
       const viewState = {
         ...formData,
+        deductions: validDeductions,
         id: bookingID,
         isDevisBill,
-        billReference: finalBillReference
+        billReference: finalBillReference,
+        source: 'manual'
       };
       navigate('/generatedBill', { state: viewState });
     } catch (error) {
@@ -206,7 +277,7 @@ const GenerateBillManual = () => {
         >
           <ReceiptIcon color="primary" />
           <Typography variant={{ xs: 'h5', sm: 'h4' }} component="h1" sx={{ flexGrow: 1 }}>
-            Generate Manual Bill
+            {isEditing ? 'Edit Manual Bill' : 'Generate Manual Bill'}
           </Typography>
           <Grid item xs={12}>
             <Box
@@ -385,6 +456,96 @@ const GenerateBillManual = () => {
                     endAdornment: '%'
                   }}
                 />
+              </Grid>
+
+              <Grid item xs={12}>
+                <Divider sx={{ my: 1 }} />
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: { xs: 'flex-start', sm: 'center' },
+                    mb: 2,
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    gap: { xs: 1, sm: 0 }
+                  }}
+                >
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                    Deductions
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<AddIcon />}
+                    onClick={handleAddDeduction}
+                    sx={{ borderRadius: 2, width: { xs: '100%', sm: 'auto' } }}
+                  >
+                    Add Deduction
+                  </Button>
+                </Box>
+
+                {formData.deductions.length > 0 && (
+                  <Stack spacing={2}>
+                    <Box
+                      sx={{
+                        display: { xs: 'none', sm: 'grid' },
+                        gridTemplateColumns: '1fr 160px 48px',
+                        gap: 2,
+                        px: 2,
+                        py: 1,
+                        bgcolor: 'grey.100',
+                        borderRadius: 1,
+                        fontWeight: 600
+                      }}
+                    >
+                      <Typography variant="body2">Reason</Typography>
+                      <Typography variant="body2">Amount (CHF)</Typography>
+                      <Typography variant="body2" />
+                    </Box>
+
+                    {formData.deductions.map((deduction, index) => (
+                      <Box
+                        key={index}
+                        sx={{
+                          display: 'flex',
+                          gap: { xs: 1, sm: 2 },
+                          alignItems: { xs: 'stretch', sm: 'center' },
+                          p: { xs: 1.5, sm: 2 },
+                          bgcolor: 'grey.50',
+                          borderRadius: 1,
+                          border: '1px solid',
+                          borderColor: 'grey.300',
+                          flexDirection: { xs: 'column', sm: 'row' }
+                        }}
+                      >
+                        <TextField
+                          label="Reason"
+                          value={deduction.reason}
+                          onChange={(e) => handleDeductionChange(index, 'reason', e.target.value)}
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          inputProps={{ maxLength: DEDUCTION_REASON_MAX_LENGTH }}
+                        />
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                          <TextField
+                            label="Amount (CHF)"
+                            type="number"
+                            value={deduction.amount}
+                            onChange={(e) => handleDeductionChange(index, 'amount', e.target.value)}
+                            variant="outlined"
+                            size="small"
+                            inputProps={{ min: 0.01, step: 0.01 }}
+                            sx={{ minWidth: { xs: 'auto', sm: 160 } }}
+                          />
+                          <IconButton color="error" onClick={() => handleRemoveDeduction(index)} size="small">
+                            <DeleteIcon />
+                          </IconButton>
+                        </Box>
+                      </Box>
+                    ))}
+                  </Stack>
+                )}
               </Grid>
             </Grid>
           </CardContent>
@@ -586,7 +747,7 @@ const GenerateBillManual = () => {
             </Typography>
             <Box sx={{ bgcolor: 'grey.50', p: { xs: 2, sm: 3 }, borderRadius: 2, mt: 1 }}>
               <Grid container spacing={{ xs: 1, sm: 2 }}>
-                <Grid item xs={12} sm={4}>
+                <Grid item xs={12} sm={formData.deductionsTotal > 0 ? 3 : 4}>
                   <Box sx={{ textAlign: 'center', p: { xs: 1.5, sm: 2 } }}>
                     <Typography variant="body2" color="text.secondary">
                       Subtotal
@@ -596,7 +757,7 @@ const GenerateBillManual = () => {
                     </Typography>
                   </Box>
                 </Grid>
-                <Grid item xs={12} sm={4}>
+                <Grid item xs={12} sm={formData.deductionsTotal > 0 ? 3 : 4}>
                   <Box sx={{ textAlign: 'center', p: { xs: 1.5, sm: 2 } }}>
                     <Typography variant="body2" color="text.secondary">
                       Discount ({formData.discount}%)
@@ -606,7 +767,19 @@ const GenerateBillManual = () => {
                     </Typography>
                   </Box>
                 </Grid>
-                <Grid item xs={12} sm={4}>
+                {formData.deductionsTotal > 0 && (
+                  <Grid item xs={12} sm={3}>
+                    <Box sx={{ textAlign: 'center', p: { xs: 1.5, sm: 2 } }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Deductions
+                      </Typography>
+                      <Typography variant={{ xs: 'h5', sm: 'h4' }} sx={{ fontWeight: 600, color: 'error.main' }}>
+                        -{formData.deductionsTotal.toFixed(2)} CHF
+                      </Typography>
+                    </Box>
+                  </Grid>
+                )}
+                <Grid item xs={12} sm={formData.deductionsTotal > 0 ? 3 : 4}>
                   <Box
                     sx={{
                       textAlign: 'center',
@@ -617,7 +790,7 @@ const GenerateBillManual = () => {
                     }}
                   >
                     <Typography variant="body2" sx={{ color: 'white' }}>
-                      Total Amount
+                      Grand Total
                     </Typography>
                     <Typography variant={{ xs: 'h4', sm: 'h3' }} sx={{ fontWeight: 700, color: 'white' }}>
                       {formData.total.toFixed(2)} CHF
@@ -643,9 +816,20 @@ const GenerateBillManual = () => {
             size="large"
             onClick={handleGenerateBillManual}
             sx={{ marginRight: 2 }}
-            disabled={formData.vehicles.some((vehicle) => vehicle.services.some((service) => !service.name || !service.price))}
+            disabled={
+              formData.vehicles.some((vehicle) => vehicle.services.some((service) => !service.name || !service.price)) ||
+              !areDeductionsValid()
+            }
           >
-            {loading ? <CircularProgress size={24} color="inherit" /> : isDevisBill ? 'Generate Devis Bill' : 'Generate Bill'}
+            {loading ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : isEditing ? (
+              'Update Bill'
+            ) : isDevisBill ? (
+              'Generate Devis Bill'
+            ) : (
+              'Generate Bill'
+            )}
           </Button>
         </Box>
       </Box>

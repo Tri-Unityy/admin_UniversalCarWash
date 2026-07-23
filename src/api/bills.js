@@ -1,5 +1,5 @@
 // Firestore helpers for bills
-import { collection, doc, getDoc, onSnapshot, orderBy, query, setDoc, deleteDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, onSnapshot, orderBy, query, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../utils/firebase.config';
 
 // Collection names
@@ -14,6 +14,16 @@ export async function saveManualBill(billId, data) {
   if (existing.exists()) return { id: billId, alreadyExists: true };
   await setDoc(ref, { ...data, createdAt: new Date().toISOString(), source: 'manual' });
   return { id: billId, alreadyExists: false };
+}
+
+// Update an existing manual bill
+export async function updateManualBill(billId, data) {
+  if (!billId) throw new Error('billId is required');
+  const ref = doc(db, MANUAL_BILLS_COLLECTION, billId);
+  const existing = await getDoc(ref);
+  if (!existing.exists()) throw new Error('Bill not found');
+  await updateDoc(ref, { ...data, updatedAt: new Date().toISOString() });
+  return { id: billId };
 }
 
 // Subscribe to combined bills (manual + auto), newest first by date/serviceDate

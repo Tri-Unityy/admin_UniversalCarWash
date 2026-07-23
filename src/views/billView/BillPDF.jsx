@@ -298,6 +298,18 @@ const BillPDF = ({ formData, isDevisBill = false, showQR = false, showRappel = f
             </View>
           )}
 
+          {formData?.deductions?.length > 0 && (
+            <>
+              <Text style={[styles.summaryText, { fontWeight: 'bold', marginTop: 4 }]}>Deductions</Text>
+              {formData.deductions.map((deduction, index) => (
+                <View key={index} style={styles.summaryRow}>
+                  <Text style={styles.summaryText}>{deduction.reason}</Text>
+                  <Text style={[styles.summaryText, { color: BRAND_RED }]}>-{Number(deduction.amount).toFixed(2)} CHF</Text>
+                </View>
+              ))}
+            </>
+          )}
+
           <View style={styles.total}>
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Net à payer (TTC) </Text>

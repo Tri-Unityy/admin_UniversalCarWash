@@ -21,10 +21,10 @@ import {
   Checkbox,
   FormControlLabel
 } from '@mui/material';
-import { PictureAsPdf as PdfIcon, Print as PrintIcon, ArrowBack as BackIcon, Receipt as ReceiptIcon } from '@mui/icons-material';
+import { PictureAsPdf as PdfIcon, Print as PrintIcon, ArrowBack as BackIcon, Receipt as ReceiptIcon, Edit as EditIcon } from '@mui/icons-material';
 import logo from '../../assets/images/Carwash.png';
 import qrcode from '../../assets/images/QRCODE.jpg';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import BillPDF from './BillPDF';
 
@@ -32,6 +32,7 @@ const BRAND_RED = '#CC1F2A';
 
 const BillView = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   // Support both: state = bill (from bills list) and state = { formData: bill, readOnly } (from sidebar)
   const formData = location.state?.formData ?? location.state ?? {};
   const isDevisBill = formData?.isDevisBill === true;
@@ -65,6 +66,7 @@ const BillView = () => {
   };
 
   const serviceChunks = chunkServices(formData?.vehicles);
+  const billDeductions = formData?.deductions?.length > 0 ? formData.deductions : [];
 
   const toSafeDate = (value) => {
     if (!value) return null;
@@ -138,7 +140,7 @@ const BillView = () => {
       >
         <Box sx={{ flex: 1, textAlign: 'left' }}>
           <Typography variant="caption" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, color: 'white', opacity: 0.9 }}>
-            info@theuniversalcarwash.ch
+            info@universalcarwash.ch
           </Typography>
         </Box>
 
@@ -360,6 +362,17 @@ const BillView = () => {
             Retour
           </Button>
 
+          {formData?.source === 'manual' && formData?.id && (
+            <Button
+              variant="outlined"
+              startIcon={<EditIcon />}
+              onClick={() => navigate('/manual', { state: { ...formData, source: 'manual' } })}
+              sx={{ borderRadius: 2, px: { xs: 2, sm: 3 } }}
+            >
+              Edit Bill
+            </Button>
+          )}
+
           {/* QR option only for non-Devis (invoices); Devis never shows QR */}
           {!isDevisBill && (
             <FormControlLabel
@@ -528,6 +541,25 @@ const BillView = () => {
                       </Typography>
                     </Stack>
                   </Grid>
+                  {formData?.additionalDetails?.trim() && (
+                    <Grid item xs={12}>
+                      <Stack spacing={0.2} sx={{ mt: 0.5 }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ fontWeight: 500, fontSize: { xs: '0.7rem', sm: '0.8rem' } }}
+                        >
+                          Additional Details
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' }, whiteSpace: 'pre-wrap' }}
+                        >
+                          {formData.additionalDetails}
+                        </Typography>
+                      </Stack>
+                    </Grid>
+                  )}
                 </Grid>
               )}
 
@@ -647,6 +679,39 @@ const BillView = () => {
                             -{formData?.discountValue} CHF
                           </Typography>
                         </Box>
+                      )}
+                      {billDeductions.length > 0 && (
+                        <>
+                          <Typography
+                            variant="body2"
+                            sx={{ fontWeight: 600, fontSize: { xs: '0.8rem', sm: '0.9rem' }, pt: 0.5 }}
+                          >
+                            Deductions
+                          </Typography>
+                          {billDeductions.map((deduction, index) => (
+                            <Box
+                              key={index}
+                              sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                py: 0.3,
+                                borderBottom: '1px solid',
+                                borderColor: 'divider'
+                              }}
+                            >
+                              <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
+                                {deduction.reason}
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                sx={{ fontWeight: 600, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}
+                                color="error.main"
+                              >
+                                -{Number(deduction.amount).toFixed(2)} CHF
+                              </Typography>
+                            </Box>
+                          ))}
+                        </>
                       )}
                       <Box
                         sx={{

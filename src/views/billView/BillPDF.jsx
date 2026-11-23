@@ -240,12 +240,6 @@ const BillPDF = ({ formData, isDevisBill = false, showQR = false, showRappel = f
             <Text style={{ fontSize: 8, color: '#666666' }}>Nom</Text>
             <Text style={{ fontSize: 9, fontWeight: 'bold' }}>{formData?.name}</Text>
           </View>
-          {!isDevisBill && (
-            <View style={{ marginBottom: '3mm' }}>
-              <Text style={{ fontSize: 8, color: '#666666' }}>N° Client</Text>
-              <Text style={{ fontSize: 9 }}>{formData?.customerReference || 'N/A'}</Text>
-            </View>
-          )}
           <View style={{ marginBottom: '3mm' }}>
             <Text style={{ fontSize: 8, color: '#666666' }}>Adresse</Text>
             <Text style={{ fontSize: 9 }}>{formData?.customerAddress || 'N/A'}</Text>
@@ -254,6 +248,12 @@ const BillPDF = ({ formData, isDevisBill = false, showQR = false, showRappel = f
             <Text style={{ fontSize: 8, color: '#666666' }}>Téléphone</Text>
             <Text style={{ fontSize: 9 }}>{formData?.phoneNumber}</Text>
           </View>
+          {formData?.additionalDetails?.trim() ? (
+            <View style={{ marginTop: '3mm' }}>
+              <Text style={{ fontSize: 8, color: '#666666' }}>Additional Details</Text>
+              <Text style={{ fontSize: 9 }}>{formData.additionalDetails}</Text>
+            </View>
+          ) : null}
         </View>
 
         {/* Services Table: hide "Date du service" column for Devis (estimation) */}
@@ -304,6 +304,18 @@ const BillPDF = ({ formData, isDevisBill = false, showQR = false, showRappel = f
             </View>
           )}
 
+          {formData?.deductions?.length > 0 && (
+            <>
+              <Text style={[styles.summaryText, { fontWeight: 'bold', marginTop: 4 }]}>Deductions</Text>
+              {formData.deductions.map((deduction, index) => (
+                <View key={index} style={styles.summaryRow}>
+                  <Text style={styles.summaryText}>{deduction.reason}</Text>
+                  <Text style={[styles.summaryText, { color: BRAND_RED }]}>-{Number(deduction.amount).toFixed(2)} CHF</Text>
+                </View>
+              ))}
+            </>
+          )}
+
           <View style={styles.total}>
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Net à payer (TTC) </Text>
@@ -345,7 +357,7 @@ const BillPDF = ({ formData, isDevisBill = false, showQR = false, showRappel = f
 
           {/* Three equal columns: email (left), phone (center), page (right) */}
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={{ fontSize: 8, color: '#FFFFFF', flex: 1, textAlign: 'left' }}>info@theuniversalcarwash.ch</Text>
+            <Text style={{ fontSize: 8, color: '#FFFFFF', flex: 1, textAlign: 'left' }}>info@universalcarwash.ch</Text>
 
             <Text style={{ fontSize: 8, color: '#FFFFFF', flex: 1, textAlign: 'center' }}>+41 793270036</Text>
 

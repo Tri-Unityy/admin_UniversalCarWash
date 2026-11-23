@@ -84,6 +84,7 @@ const GenerateBillManual = () => {
     paymentDueDate: booking.paymentDueDate || currentDate,
     serviceDate: booking.serviceDate || currentDate,
     customerAddress: booking.customerAddress || booking.address || '',
+    additionalDetails: booking.additionalDetails || '',
     subTotal: booking.subTotal ?? booking.total ?? 0,
     total: booking.total ?? 0
   });
@@ -233,6 +234,7 @@ const GenerateBillManual = () => {
         paymentDueDate: formData.paymentDueDate,
         serviceDate: isDevisBill ? null : formData.serviceDate,
         customerAddress: formData.customerAddress,
+        additionalDetails: (formData.additionalDetails || '').trim(),
         customerReference: formData.customerReference,
         subTotal: formData.subTotal,
         total: formData.total,
@@ -250,6 +252,7 @@ const GenerateBillManual = () => {
 
       const viewState = {
         ...formData,
+        additionalDetails: (formData.additionalDetails || '').trim(),
         deductions: validDeductions,
         id: bookingID,
         isDevisBill,
@@ -378,6 +381,19 @@ const GenerateBillManual = () => {
                   variant="outlined"
                   multiline
                   rows={2}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Additional Details"
+                  name="additionalDetails"
+                  value={formData.additionalDetails}
+                  onChange={handleInputChange}
+                  variant="outlined"
+                  multiline
+                  rows={4}
+                  placeholder="Enter any additional information (optional)"
                 />
               </Grid>
             </Grid>

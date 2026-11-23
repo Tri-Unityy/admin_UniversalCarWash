@@ -541,6 +541,25 @@ const BillView = () => {
                       </Typography>
                     </Stack>
                   </Grid>
+                  {formData?.additionalDetails?.trim() && (
+                    <Grid item xs={12}>
+                      <Stack spacing={0.2} sx={{ mt: 0.5 }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ fontWeight: 500, fontSize: { xs: '0.7rem', sm: '0.8rem' } }}
+                        >
+                          Additional Details
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' }, whiteSpace: 'pre-wrap' }}
+                        >
+                          {formData.additionalDetails}
+                        </Typography>
+                      </Stack>
+                    </Grid>
+                  )}
                 </Grid>
               )}
 

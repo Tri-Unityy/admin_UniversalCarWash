@@ -248,6 +248,12 @@ const BillPDF = ({ formData, isDevisBill = false, showQR = false, showRappel = f
             <Text style={{ fontSize: 8, color: '#666666' }}>Téléphone</Text>
             <Text style={{ fontSize: 9 }}>{formData?.phoneNumber}</Text>
           </View>
+          {formData?.additionalDetails?.trim() ? (
+            <View style={{ marginTop: '3mm' }}>
+              <Text style={{ fontSize: 8, color: '#666666' }}>Additional Details</Text>
+              <Text style={{ fontSize: 9 }}>{formData.additionalDetails}</Text>
+            </View>
+          ) : null}
         </View>
 
         {/* Services Table: hide "Date du service" column for Devis (estimation) */}

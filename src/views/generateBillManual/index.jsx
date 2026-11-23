@@ -18,8 +18,10 @@ import {
 import { Add as AddIcon, Delete as DeleteIcon, Receipt as ReceiptIcon } from '@mui/icons-material';
 import MainCard from 'ui-component/cards/MainCard';
 import { saveManualBill, updateManualBill } from '../../api/bills';
+import { calculateManualBillTotals, sumPositiveAmounts } from '../../utils/manualBillTotals.mjs';
 
 const DEDUCTION_REASON_MAX_LENGTH = 200;
+const ADDITION_REASON_MAX_LENGTH = 200;
 
 const GenerateBillManual = () => {
   const navigate = useNavigate();
@@ -34,16 +36,10 @@ const GenerateBillManual = () => {
   const calculateSubTotal = (vehicles) =>
     vehicles.reduce((sum, vehicle) => sum + vehicle.services.reduce((vSum, s) => vSum + (s.price || 0), 0), 0);
 
-  const calculateDeductionsTotal = (deductions) =>
-    (deductions || []).reduce((sum, d) => {
-      const amount = parseFloat(d.amount);
-      return sum + (amount > 0 ? amount : 0);
-    }, 0);
-
-  const getValidDeductions = (deductions) =>
-    (deductions || [])
-      .filter((d) => (d.reason || '').trim() && parseFloat(d.amount) > 0)
-      .map((d) => ({ reason: d.reason.trim(), amount: parseFloat(d.amount) }));
+  const getValidAmountRows = (rows) =>
+    (rows || [])
+      .filter((row) => (row.reason || '').trim() && parseFloat(row.amount) > 0)
+      .map((row) => ({ reason: row.reason.trim(), amount: parseFloat(row.amount) }));
 
   const generateBookingID = () => {
     const now = new Date();
@@ -73,7 +69,9 @@ const GenerateBillManual = () => {
     discount: booking.discount ?? 0,
     discountValue: booking.discountValue ?? 0,
     deductions: booking.deductions || [],
-    deductionsTotal: booking.deductionsTotal ?? calculateDeductionsTotal(booking.deductions),
+    deductionsTotal: booking.deductionsTotal ?? sumPositiveAmounts(booking.deductions),
+    additions: booking.additions || [],
+    additionsTotal: booking.additionsTotal ?? sumPositiveAmounts(booking.additions),
     vehicles: booking.vehicles || [
       {
         vehicleType: booking.carmodel || '',
@@ -106,6 +104,23 @@ const GenerateBillManual = () => {
     return true;
   };
 
+  const areAdditionsValid = () => {
+    for (const addition of formData.additions) {
+      const reason = (addition.reason || '').trim();
+      const hasReason = reason.length > 0;
+      const amount = parseFloat(addition.amount);
+      const hasAmount = addition.amount !== '' && addition.amount !== undefined && !Number.isNaN(amount);
+
+      if (!hasReason && !hasAmount) continue;
+
+      if (hasAmount && amount <= 0) return false;
+      if (hasAmount && !hasReason) return false;
+      if (hasReason && (!hasAmount || amount <= 0)) return false;
+      if (reason.length > ADDITION_REASON_MAX_LENGTH) return false;
+    }
+    return true;
+  };
+
   const isFormValid = () => {
     if (!formData.name.trim()) return false;
     if (formData.vehicles.length === 0) return false;
@@ -125,11 +140,14 @@ const GenerateBillManual = () => {
 
   useEffect(() => {
     const subTotal = calculateSubTotal(formData.vehicles);
-    const discountValue = (formData.discount * subTotal) / 100;
-    const deductionsTotal = calculateDeductionsTotal(formData.deductions);
-    const total = subTotal - discountValue - deductionsTotal;
-    setFormData((prev) => ({ ...prev, subTotal, total, discountValue, deductionsTotal }));
-  }, [formData.vehicles, formData.discount, formData.deductions]);
+    const { discountValue, deductionsTotal, additionsTotal, total } = calculateManualBillTotals({
+      subTotal,
+      discount: formData.discount,
+      deductions: formData.deductions,
+      additions: formData.additions
+    });
+    setFormData((prev) => ({ ...prev, subTotal, total, discountValue, deductionsTotal, additionsTotal }));
+  }, [formData.vehicles, formData.discount, formData.deductions, formData.additions]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -202,6 +220,29 @@ const GenerateBillManual = () => {
     setFormData((prev) => ({ ...prev, deductions: updated }));
   };
 
+  const handleAddAddition = () => {
+    setFormData((prev) => ({
+      ...prev,
+      additions: [...prev.additions, { reason: '', amount: '' }]
+    }));
+  };
+
+  const handleRemoveAddition = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      additions: prev.additions.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleAdditionChange = (index, field, value) => {
+    const updated = [...formData.additions];
+    updated[index] = {
+      ...updated[index],
+      [field]: value
+    };
+    setFormData((prev) => ({ ...prev, additions: updated }));
+  };
+
   const handleGenerateBillManual = async () => {
     setLoading(true);
     try {
@@ -215,13 +256,19 @@ const GenerateBillManual = () => {
         setLoading(false);
         return;
       }
+      if (!areAdditionsValid()) {
+        alert('Please enter a valid reason and positive amount for each addition.');
+        setLoading(false);
+        return;
+      }
       if (isDevisBill && !devisBillId.trim()) {
         alert('Please enter Devis Bill ID');
         setLoading(false);
         return;
       }
       const finalBillReference = isDevisBill ? devisBillId : formData.billReference;
-      const validDeductions = getValidDeductions(formData.deductions);
+      const validDeductions = getValidAmountRows(formData.deductions);
+      const validAdditions = getValidAmountRows(formData.additions);
       const saveData = {
         id: bookingID,
         name: formData.name,
@@ -231,6 +278,8 @@ const GenerateBillManual = () => {
         vehicles: formData.vehicles,
         deductions: validDeductions,
         deductionsTotal: formData.deductionsTotal,
+        additions: validAdditions,
+        additionsTotal: formData.additionsTotal,
         paymentDueDate: formData.paymentDueDate,
         serviceDate: isDevisBill ? null : formData.serviceDate,
         customerAddress: formData.customerAddress,
@@ -254,6 +303,7 @@ const GenerateBillManual = () => {
         ...formData,
         additionalDetails: (formData.additionalDetails || '').trim(),
         deductions: validDeductions,
+        additions: validAdditions,
         id: bookingID,
         isDevisBill,
         billReference: finalBillReference,
@@ -555,6 +605,97 @@ const GenerateBillManual = () => {
                             sx={{ minWidth: { xs: 'auto', sm: 160 } }}
                           />
                           <IconButton color="error" onClick={() => handleRemoveDeduction(index)} size="small">
+                            <DeleteIcon />
+                          </IconButton>
+                        </Box>
+                      </Box>
+                    ))}
+                  </Stack>
+                )}
+              </Grid>
+
+              <Grid item xs={12}>
+                <Divider sx={{ my: 1 }} />
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: { xs: 'flex-start', sm: 'center' },
+                    mb: 2,
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    gap: { xs: 1, sm: 0 }
+                  }}
+                >
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                    Additions
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<AddIcon />}
+                    onClick={handleAddAddition}
+                    sx={{ borderRadius: 2, width: { xs: '100%', sm: 'auto' } }}
+                  >
+                    Add Addition
+                  </Button>
+                </Box>
+
+                {formData.additions.length > 0 && (
+                  <Stack spacing={2}>
+                    <Box
+                      sx={{
+                        display: { xs: 'none', sm: 'grid' },
+                        gridTemplateColumns: '1fr 160px 48px',
+                        gap: 2,
+                        px: 2,
+                        py: 1,
+                        bgcolor: 'grey.100',
+                        borderRadius: 1,
+                        fontWeight: 600
+                      }}
+                    >
+                      <Typography variant="body2">Reason</Typography>
+                      <Typography variant="body2">Amount (CHF)</Typography>
+                      <Typography variant="body2" />
+                    </Box>
+
+                    {formData.additions.map((addition, index) => (
+                      <Box
+                        key={index}
+                        sx={{
+                          display: 'flex',
+                          gap: { xs: 1, sm: 2 },
+                          alignItems: { xs: 'stretch', sm: 'center' },
+                          p: { xs: 1.5, sm: 2 },
+                          bgcolor: 'grey.50',
+                          borderRadius: 1,
+                          border: '1px solid',
+                          borderColor: 'grey.300',
+                          flexDirection: { xs: 'column', sm: 'row' }
+                        }}
+                      >
+                        <TextField
+                          label="Reason"
+                          value={addition.reason}
+                          onChange={(e) => handleAdditionChange(index, 'reason', e.target.value)}
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          placeholder="e.g. Previous Date Payment"
+                          inputProps={{ maxLength: ADDITION_REASON_MAX_LENGTH }}
+                        />
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                          <TextField
+                            label="Amount (CHF)"
+                            type="number"
+                            value={addition.amount}
+                            onChange={(e) => handleAdditionChange(index, 'amount', e.target.value)}
+                            variant="outlined"
+                            size="small"
+                            inputProps={{ min: 0.01, step: 0.01 }}
+                            sx={{ minWidth: { xs: 'auto', sm: 160 } }}
+                          />
+                          <IconButton color="error" onClick={() => handleRemoveAddition(index)} size="small">
                             <DeleteIcon />
                           </IconButton>
                         </Box>
